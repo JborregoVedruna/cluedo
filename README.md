@@ -61,11 +61,11 @@ se generan comprobando la unicidad por fuerza bruta).
 
 ## Despliegue en GitHub Pages
 
-La pipeline está en `.github/workflows/deploy.yml` y se ejecuta en cada push a `main`
+La pipeline está en `.github/workflows/deploy.yml` y se ejecuta en cada push a `master`
 (o a mano desde la pestaña **Actions → Desplegar en GitHub Pages → Run workflow**).
 
 1. En el repositorio: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-2. Haz push a `main`. La web queda en `https://<usuario>.github.io/<repositorio>/`.
+2. Haz push a `master`. La web queda en `https://<usuario>.github.io/<repositorio>/`.
 
 La pipeline pasa a Astro `ASTRO_SITE` y `ASTRO_BASE` (los obtiene de `actions/configure-pages`),
 así que funciona con cualquier nombre de repositorio. Todos los enlaces internos usan
