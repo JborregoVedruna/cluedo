@@ -1,0 +1,37 @@
+---
+import Layout from '../layouts/Layout.astro';
+import NavExpediente from '../components/NavExpediente.astro';
+import Scrollytelling from '../components/Scrollytelling.astro';
+import PortadaExpediente from '../components/PortadaExpediente.astro';
+import FichaCinematica from '../components/FichaCinematica.astro';
+import SiguienteExpediente from '../components/SiguienteExpediente.astro';
+import { ARMAS } from '../data/caso.ts';
+---
+
+<Layout title="Armas · ¿Quién mató a Puyana?">
+  <NavExpediente actual="armas" />
+  <Scrollytelling>
+    <PortadaExpediente
+      antetitulo="Expediente · 2 de 3"
+      titulo="Armas"
+      texto="Seis objetos que estaban al alcance de cualquiera esa noche. Uno de ellos terminó con la vida de Puyana."
+      tono="#a3802f"
+    />
+    {
+      ARMAS.map((a, i) => (
+        <FichaCinematica
+          elemento={a}
+          indice={i + 1}
+          total={ARMAS.length}
+          categoria="Arma"
+          bloques={[
+            { titulo: 'Descripción', texto: a.descripcion },
+            { titulo: 'Relación con Puyana', texto: a.relacion },
+            { titulo: 'Informe forense', texto: a.forense },
+          ]}
+        />
+      ))
+    }
+    <SiguienteExpediente siguiente={{ href: '/lugares', texto: 'Siguiente: los lugares' }} />
+  </Scrollytelling>
+</Layout>

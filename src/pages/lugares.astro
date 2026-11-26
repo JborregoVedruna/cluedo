@@ -1,0 +1,37 @@
+---
+import Layout from '../layouts/Layout.astro';
+import NavExpediente from '../components/NavExpediente.astro';
+import Scrollytelling from '../components/Scrollytelling.astro';
+import PortadaExpediente from '../components/PortadaExpediente.astro';
+import FichaCinematica from '../components/FichaCinematica.astro';
+import SiguienteExpediente from '../components/SiguienteExpediente.astro';
+import { LUGARES } from '../data/caso.ts';
+---
+
+<Layout title="Lugares · ¿Quién mató a Puyana?">
+  <NavExpediente actual="lugares" />
+  <Scrollytelling>
+    <PortadaExpediente
+      antetitulo="Expediente · 3 de 3"
+      titulo="Lugares"
+      texto="Villa Puyana tiene seis estancias que nadie vigilaba durante el apagón. En una de ellas, el anfitrión respiró por última vez."
+      tono="#2f6b45"
+    />
+    {
+      LUGARES.map((l, i) => (
+        <FichaCinematica
+          elemento={l}
+          indice={i + 1}
+          total={LUGARES.length}
+          categoria="Lugar"
+          bloques={[
+            { titulo: 'La estancia', texto: l.descripcion },
+            { titulo: 'Relación con Puyana', texto: l.relacion },
+            { titulo: 'Detalle observado', texto: l.detalle },
+          ]}
+        />
+      ))
+    }
+    <SiguienteExpediente siguiente={{ href: '/personajes', texto: 'Volver a los sospechosos' }} />
+  </Scrollytelling>
+</Layout>

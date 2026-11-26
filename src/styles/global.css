@@ -1,0 +1,100 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-carbon-950: #0b0a0b;
+  --color-carbon-900: #141214;
+  --color-carbon-800: #1e1b1e;
+  --color-carbon-700: #2a262a;
+  --color-carbon-600: #3a353a;
+
+  --color-burdeos-950: #2a0509;
+  --color-burdeos-900: #4a0a12;
+  --color-burdeos-800: #6b0f1a;
+  --color-burdeos-700: #8f1d2c;
+  --color-burdeos-600: #b3263a;
+
+  --color-dorado-300: #f0dca0;
+  --color-dorado-400: #e6c77a;
+  --color-dorado-500: #c9a24a;
+  --color-dorado-600: #a3802f;
+
+  --color-crema: #efe6d2;
+
+  --font-display: 'Didot', 'Bodoni 72', 'Bodoni MT', 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+:root {
+  /* Color de la "iluminación" de la escena actual; GSAP lo anima al hacer scroll. */
+  --tono: #6b0f1a;
+  color-scheme: dark;
+}
+
+html {
+  background: var(--color-carbon-950);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* Fondo fijo que cambia de luz según la sección visible. */
+.escenario {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 70% at 50% -10%, color-mix(in srgb, var(--tono) 60%, transparent), transparent 65%),
+    radial-gradient(90% 60% at 100% 110%, color-mix(in srgb, var(--tono) 30%, transparent), transparent 70%),
+    var(--color-carbon-950);
+}
+
+/* Grano de película sutil */
+.escenario::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.texto-oro {
+  background: linear-gradient(180deg, #f6e7b8 0%, #e6c77a 38%, #b88a33 72%, #e6c77a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.contorno {
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--t, #c9a24a) 70%, white 10%);
+}
+
+/* Modales del juego */
+.modal-fondo {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.modal-fondo .modal-panel {
+  transform: translateY(24px);
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.modal-fondo.abierto {
+  opacity: 1;
+}
+.modal-fondo.abierto .modal-panel {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

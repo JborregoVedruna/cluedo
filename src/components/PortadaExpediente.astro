@@ -1,0 +1,25 @@
+---
+interface Props {
+  antetitulo: string;
+  titulo: string;
+  texto: string;
+  tono: string;
+}
+const { antetitulo, titulo, texto, tono } = Astro.props;
+---
+
+<section data-escena data-tono={tono} class="relative flex min-h-svh items-end overflow-hidden px-5 pt-28 pb-16 sm:px-8">
+  <div class="mx-auto w-full max-w-5xl">
+    <p data-anim class="font-sans text-[11px] font-bold tracking-[0.4em] text-dorado-500 uppercase">{antetitulo}</p>
+    <h1 data-revelar class="texto-oro mt-4 font-display text-[clamp(3.4rem,17vw,10rem)] leading-[0.85] uppercase">
+      {titulo}
+    </h1>
+    <p data-anim class="mt-6 max-w-lg font-display text-xl leading-relaxed text-crema/85 italic">{texto}</p>
+    <p data-anim class="mt-10 flex items-center gap-3 font-sans text-xs tracking-[0.3em] text-crema/50 uppercase">
+      Desliza para abrir el expediente
+      <svg viewBox="0 0 24 24" class="size-4 animate-bounce" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M6 9l6 6 6-6"></path>
+      </svg>
+    </p>
+  </div>
+</section>

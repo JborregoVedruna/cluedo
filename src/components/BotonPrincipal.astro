@@ -1,0 +1,23 @@
+---
+import { ruta } from '../lib/ruta.ts';
+interface Props {
+  href: string;
+  texto: string;
+  detalle?: string;
+  variante?: 'oro' | 'burdeos';
+}
+const { href, texto, detalle, variante = 'oro' } = Astro.props;
+---
+
+<a
+  href={ruta(href)}
+  class:list={[
+    'group flex min-h-16 w-full flex-col items-center justify-center rounded-2xl px-6 py-3 text-center transition active:scale-[0.98] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-dorado-400',
+    variante === 'oro'
+      ? 'bg-dorado-500 text-carbon-950 shadow-xl shadow-black/40 hover:bg-dorado-400'
+      : 'border border-dorado-500/50 bg-burdeos-900/70 text-dorado-400 backdrop-blur hover:bg-burdeos-800/80',
+  ]}
+>
+  <span class="font-sans text-base font-bold tracking-wide uppercase">{texto}</span>
+  {detalle && <span class="mt-0.5 font-sans text-xs opacity-75">{detalle}</span>}
+</a>
