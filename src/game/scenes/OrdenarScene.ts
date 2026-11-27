@@ -10,6 +10,7 @@ interface Vista {
   fondo: Phaser.GameObjects.Graphics;
   insignia: Phaser.GameObjects.Text;
   alto: number;
+  ancho: number;
 }
 
 const ANCHO_TARJETA = ANCHO - 36;
@@ -30,7 +31,9 @@ export class OrdenarScene extends MisionBase {
     this.puzle = this.generar(rng);
     this.orden = [];
     this.vistas = [];
-    let y = this.yLibre(6);
+    const yInicio = this.yLibre(6);
+    let y = yInicio;
+    const previos = new Set(this.children.list);
 
     if (this.puzle.destacado) {
       const d = this.puzle.destacado;
@@ -39,9 +42,9 @@ export class OrdenarScene extends MisionBase {
         this.dibujarReloj(52, y + 28, 26, this.puzle.reloj);
         x = 92;
       }
-      texto(this, x, y + 8, d.etiqueta, { size: 12.5, color: H.gris, serif: false });
-      texto(this, x, y + 26, d.valor, { size: 26, color: H.champan400, negrita: true });
-      y += 64;
+      texto(this, x, y + 4, d.etiqueta, { size: 12, color: H.gris, serif: false, ancho: ANCHO - x - 20 });
+      texto(this, x, y + 22, d.valor, { size: 24, color: H.champan400, negrita: true });
+      y += this.puzle.reloj !== undefined ? 62 : 54;
     }
 
     if (this.puzle.pistas?.length) {
@@ -61,15 +64,35 @@ export class OrdenarScene extends MisionBase {
 
     const disponible = this.disponibleDesde(y);
     const conMiniatura = this.puzle.tarjetas.some((t) => t.cordones);
+    // Tarjetas cortas (p. ej. canciones): en dos columnas para que quepan en el móvil.
+    const columnas = !conMiniatura && this.puzle.tarjetas.every((t) => t.texto.length <= 34) ? 2 : 1;
+    const anchoTarjeta = columnas === 2 ? (ANCHO - 36 - 8) / 2 : ANCHO_TARJETA;
+    let yFinal = y;
     for (const size of [13, 12, 11, 10]) {
       this.vistas.forEach((v) => v.fondo.parentContainer?.destroy());
       this.vistas = [];
       let yy = y;
-      for (const t of this.puzle.tarjetas) {
-        const v = this.crearTarjeta(t, yy, size, conMiniatura);
-        yy += v.alto + 7;
+      for (let k = 0; k < this.puzle.tarjetas.length; k += columnas) {
+        let altoFila = 0;
+        for (let c = 0; c < columnas && k + c < this.puzle.tarjetas.length; c++) {
+          const x = 18 + anchoTarjeta / 2 + c * (anchoTarjeta + 8);
+          const v = this.crearTarjeta(this.puzle.tarjetas[k + c], x, yy, size, conMiniatura, anchoTarjeta);
+          altoFila = Math.max(altoFila, v.alto);
+        }
+        yy += altoFila + 7;
       }
-      if (yy - 7 - y <= disponible) break;
+      yFinal = yy - 7;
+      if (yFinal - y <= disponible) break;
+    }
+
+    // Si aun así no cabe, se encoge todo el contenido para que entre entero en pantalla.
+    const limite = this.disponibleDesde(0);
+    if (yFinal > limite) {
+      const escala = (limite - yInicio) / (yFinal - yInicio);
+      const nuevos = this.children.list.filter((o) => !previos.has(o));
+      const contenedor = this.add.container(0, 0, nuevos);
+      contenedor.setScale(escala);
+      contenedor.setPosition((ANCHO - ANCHO * escala) / 2, yInicio * (1 - escala));
     }
 
     this.accion = this.botonAccion('Comprobar orden', () => this.comprobar());
@@ -77,11 +100,18 @@ export class OrdenarScene extends MisionBase {
     this.avisar('Toca las tarjetas de la primera a la última. Vuelve a tocar una para quitarla.');
   }
 
-  private crearTarjeta(t: TarjetaOrden, y: number, size: number, conMiniatura: boolean): Vista {
-    const izquierda = conMiniatura ? 128 : 54;
-    const cuerpo = texto(this, 0, 0, t.texto, { size, ancho: ANCHO_TARJETA - izquierda - 12, interlineado: 1 });
+  private crearTarjeta(
+    t: TarjetaOrden,
+    x: number,
+    y: number,
+    size: number,
+    conMiniatura: boolean,
+    ANCHO_TARJETA: number,
+  ): Vista {
+    const izquierda = conMiniatura ? 128 : 48;
+    const cuerpo = texto(this, 0, 0, t.texto, { size, ancho: ANCHO_TARJETA - izquierda - 10, interlineado: 1 });
     const alto = t.texto ? Math.max(44, cuerpo.height + 28) : 56;
-    const c = zonaTactil(this, ANCHO / 2, y + alto / 2, ANCHO_TARJETA, alto, () => this.alternar(t.id));
+    const c = zonaTactil(this, x, y + alto / 2, ANCHO_TARJETA, alto, () => this.alternar(t.id));
     const fondo = this.add.graphics();
     const etiqueta = texto(this, -ANCHO_TARJETA / 2 + izquierda, -alto / 2 + 9, t.etiqueta.toUpperCase(), {
       size: 10.5,
@@ -92,7 +122,7 @@ export class OrdenarScene extends MisionBase {
       mono: !!t.cordones,
     });
     cuerpo.setPosition(-ANCHO_TARJETA / 2 + izquierda, -alto / 2 + 23);
-    const insignia = texto(this, -ANCHO_TARJETA / 2 + 26, 0, '', {
+    const insignia = texto(this, -ANCHO_TARJETA / 2 + 24, 0, '', {
       size: 17,
       negrita: true,
       color: '#1d1530',
@@ -101,7 +131,7 @@ export class OrdenarScene extends MisionBase {
     });
     c.add([fondo, etiqueta, cuerpo, insignia]);
     if (t.cordones) c.add(this.miniaturaCamara(-ANCHO_TARJETA / 2 + 50, -alto / 2 + 8, 70, alto - 16, t.cordones));
-    const vista = { datos: t, fondo, insignia, alto };
+    const vista = { datos: t, fondo, insignia, alto, ancho: ANCHO_TARJETA };
     this.vistas.push(vista);
     this.pintar(vista);
     return vista;
@@ -141,6 +171,7 @@ export class OrdenarScene extends MisionBase {
   }
 
   private pintar(v: Vista): void {
+    const ANCHO_TARJETA = v.ancho;
     const pos = this.orden.indexOf(v.datos.id);
     const g = v.fondo;
     g.clear();
@@ -148,12 +179,12 @@ export class OrdenarScene extends MisionBase {
       relleno: pos >= 0 ? C.noche700 : C.noche800,
       borde: pos >= 0 ? C.fucsia600 : C.noche600,
     });
-    const cx = -ANCHO_TARJETA / 2 + 26;
+    const cx = -ANCHO_TARJETA / 2 + 24;
     if (pos >= 0) {
-      g.fillStyle(C.champan500, 1).fillCircle(cx, 0, 15);
+      g.fillStyle(C.champan500, 1).fillCircle(cx, 0, 14);
       v.insignia.setText(String(pos + 1));
     } else {
-      g.lineStyle(1.5, C.cian500, 0.6).strokeCircle(cx, 0, 15);
+      g.lineStyle(1.5, C.cian500, 0.6).strokeCircle(cx, 0, 14);
       v.insignia.setText('');
     }
   }
