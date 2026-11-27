@@ -27,7 +27,7 @@ export class MapaScene extends Scene {
     fondo(this);
     const partida = obtener();
 
-    texto(this, ANCHO / 2, 30, 'HOTEL RIU PLAZA ESPAÑA · PLANTA 27', {
+    texto(this, ANCHO / 2, 24, 'HOTEL RIU PLAZA ESPAÑA · PLANTA 27', {
       size: 10.5,
       color: H.cian400,
       origen: [0.5, 0.5],
@@ -35,17 +35,46 @@ export class MapaScene extends Scene {
       negrita: true,
       espaciado: 2,
     });
-    texto(this, ANCHO / 2, 56, 'La pre boda de Juanky y Paula', { size: 21, origen: [0.5, 0.5], negrita: true });
-    texto(this, ANCHO / 2, 80, 'Resuelve las misiones en el orden que quieras.', {
+    texto(this, ANCHO / 2, 48, 'La pre boda de Juanky y Paula', { size: 21, origen: [0.5, 0.5], negrita: true });
+    texto(this, ANCHO / 2, 70, 'Resuelve las misiones en el orden que quieras.', {
       size: 12,
       color: H.gris,
       origen: [0.5, 0.5],
       serif: false,
     });
 
+    // ---------- Panel de progreso y vidas (justo bajo el subtítulo) ----------
+    const completadas = partida.misiones.filter((m) => m.estado === 'completada').length;
+    const v = vidas();
+    const yPanel = 84;
+    const altoPanel = 56;
+    const panel = this.add.graphics();
+    rectRedondo(panel, 20, yPanel, ANCHO - 40, altoPanel, { relleno: C.noche800, borde: C.fucsia600, alfaBorde: 0.5, radio: 14 });
+    // Progreso (izquierda)
+    texto(this, 34, yPanel + 12, 'MISIONES', { size: 9.5, color: H.cian400, serif: false, negrita: true, espaciado: 1.5 });
+    texto(this, 34, yPanel + 25, `${completadas} / ${TOTAL_MISIONES}`, { size: 17, negrita: true, serif: false });
+    const anchoBarra = 120;
+    const xBarra = 104;
+    rectRedondo(panel, xBarra, yPanel + 32, anchoBarra, 8, { relleno: C.noche600, radio: 4 });
+    if (completadas > 0) {
+      rectRedondo(panel, xBarra, yPanel + 32, (anchoBarra * completadas) / TOTAL_MISIONES, 8, { relleno: C.fucsia600, radio: 4 });
+    }
+    // Vidas (derecha, grandes)
+    texto(this, ANCHO - 34, yPanel + 12, 'VIDAS', { size: 9.5, color: H.cian400, serif: false, negrita: true, espaciado: 1.5, origen: [1, 0] });
+    for (let k = 0; k < VIDAS_INICIALES; k++) {
+      const llena = k < v;
+      const corazon = texto(this, ANCHO - 34 - (VIDAS_INICIALES - 1 - k) * 32, yPanel + 38, llena ? '♥' : '♡', {
+        size: 28,
+        color: llena ? H.fucsia600 : '#5b4f80',
+        origen: [1, 0.5],
+        serif: false,
+      });
+      if (llena && v === 1) this.tweens.add({ targets: corazon, scale: { from: 1, to: 1.15 }, duration: 500, yoyo: true, repeat: -1 });
+    }
+
     const anchoCelda = (ANCHO - 40 - 16) / 3;
     const altoCelda = 80;
-    let y = 100;
+    let y = yPanel + altoPanel + 12;
     for (const g of GRUPOS) {
       texto(this, 20, y, g.titulo, { size: 9.5, color: g.color, serif: false, negrita: true, espaciado: 1.5 });
       y += 16;
@@ -60,32 +89,11 @@ export class MapaScene extends Scene {
       y += Math.ceil(indices.length / 3) * (altoCelda + 8) + 4;
     }
 
-    const completadas = partida.misiones.filter((m) => m.estado === 'completada').length;
-    const yBarra = y + 6;
-    const gb = this.add.graphics();
-    rectRedondo(gb, 30, yBarra, ANCHO - 60, 8, { relleno: C.noche700, radio: 4 });
-    if (completadas > 0) {
-      rectRedondo(gb, 30, yBarra, ((ANCHO - 60) * completadas) / TOTAL_MISIONES, 8, { relleno: C.fucsia600, radio: 4 });
-    }
-    const v = vidas();
-    texto(this, ANCHO - 30, yBarra + 22, '♥'.repeat(v) + '♡'.repeat(Math.max(0, VIDAS_INICIALES - v)), {
-      size: 15,
-      color: v === 0 ? H.rojo : H.fucsia600,
-      origen: [1, 0.5],
-      serif: false,
-      espaciado: 2,
-    });
-    texto(this, 30, yBarra + 22, `Misiones: ${completadas} / ${TOTAL_MISIONES}`, {
-      size: 12.5,
-      origen: [0, 0.5],
-      serif: false,
-    });
-
     let pie = 'Abre el Cuaderno cuando quieras para revisar tus descartes.';
     if (partida.perdida) pie = 'Has perdido la partida. Empieza una nueva desde el Cuaderno o desde el inicio.';
     else if (partida.resuelta) pie = 'Caso resuelto. Puedes empezar otra partida desde el Cuaderno.';
     else if (puedeAcusar()) pie = 'Todas las pistas están sobre la mesa. Pulsa «Resolver el caso» cuando lo tengas.';
-    this.aviso = texto(this, ANCHO / 2, yBarra + 48, pie, {
+    this.aviso = texto(this, ANCHO / 2, y + 16, pie, {
       size: 12,
       color: puedeAcusar() ? H.champan400 : H.gris,
       origen: [0.5, 0.5],

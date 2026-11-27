@@ -15,6 +15,8 @@ const CANCIONES = [
   'Corazón contento',
   'Gasolina',
   'Despechá',
+  'Bailando',
+  'La Macarena',
 ];
 
 const FIN = 3 * 3600 + 30 * 60;
@@ -40,12 +42,12 @@ function inicios(orden: number[], duraciones: number[]): number[] {
 }
 
 export function generarDj(rng: Rng): PuzleOrden {
-  for (let intento = 0; intento < 200; intento++) {
-    const n = 4;
+  for (let intento = 0; intento < 400; intento++) {
+    const n = 6;
     const titulos = barajar(rng, CANCIONES).slice(0, n);
-    const duraciones = titulos.map(() => 150 + 15 * entero(rng, 0, 8));
+    const duraciones = titulos.map(() => 150 + 5 * entero(rng, 0, 30)); // 2:30 – 5:00, de 5 en 5 s
     if (new Set(duraciones).size < n) continue;
-    const solucion = barajar(rng, [0, 1, 2, 3]); // orden de reproducción (índices de canción)
+    const solucion = barajar(rng, [0, 1, 2, 3, 4, 5]); // orden de reproducción (índices de canción)
     const inicioReal = inicios(solucion, duraciones);
     const pos = (orden: number[], c: number) => orden.indexOf(c);
     const personas = barajar(rng, SOSPECHOSOS);
@@ -69,7 +71,7 @@ export function generarDj(rng: Rng): PuzleOrden {
     const conHora = pool.filter((c, i) => i % (1 + 2 * (n - 1)) === 0 && c.cumple(solucion));
     const ancla = conHora.find((c) => !c.texto.includes(hora(FIN - duraciones[solucion[n - 1]])));
     const pistas = elegirCondiciones(rng, universo, esSol, pool.filter((c) => !c.texto.includes('Justo después') || rng() < 0.4), 12, ancla ? [ancla] : []);
-    if (!pistas || pistas.length > 4) continue;
+    if (!pistas || pistas.length > 6 || pistas.filter((p) => p.includes('eran las')).length < 2) continue;
 
     const tarjetas = titulos.map((t, c) => ({ id: `s${c}`, etiqueta: `Duración ${mmss(duraciones[c])}`, texto: `«${t}»` }));
     return {

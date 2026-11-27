@@ -37,7 +37,7 @@ export abstract class MisionBase extends Scene {
     }
 
     boton(this, 56, 34, 88, 34, '‹ Terraza', () => this.volver(), 'fantasma', 13);
-    this.corazones = texto(this, ANCHO / 2, 34, '', { size: 17, origen: [0.5, 0.5], serif: false, espaciado: 2 });
+    this.corazones = texto(this, ANCHO / 2, 34, '', { size: 24, origen: [0.5, 0.5], serif: false, espaciado: 3 });
     this.pintarVidas();
     texto(this, ANCHO / 2, 70, this.info.titulo, {
       size: 21,

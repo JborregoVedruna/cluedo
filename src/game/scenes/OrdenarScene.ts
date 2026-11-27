@@ -45,12 +45,14 @@ export class OrdenarScene extends MisionBase {
     }
 
     if (this.puzle.pistas?.length) {
-      const t = texto(this, 34, y + 10, this.puzle.pistas.map((p) => `• ${p}`).join('\n'), {
-        size: 12,
-        ancho: ANCHO - 68,
-        color: H.tinta,
-        interlineado: 3,
-      });
+      const lista = this.puzle.pistas.map((p) => `• ${p}`).join('\n');
+      const reservaTarjetas = this.puzle.tarjetas.length * 50;
+      let t!: Phaser.GameObjects.Text;
+      for (const size of [12, 11, 10.5, 10]) {
+        t?.destroy();
+        t = texto(this, 34, y + 10, lista, { size, ancho: ANCHO - 68, color: H.tinta, interlineado: 2 });
+        if (y + t.height + 30 + reservaTarjetas <= this.disponibleDesde(0)) break;
+      }
       const g = this.add.graphics();
       this.children.moveBelow(g, t);
       rectRedondo(g, 20, y, ANCHO - 40, t.height + 20, { relleno: C.papel, radio: 6 });
@@ -77,8 +79,8 @@ export class OrdenarScene extends MisionBase {
 
   private crearTarjeta(t: TarjetaOrden, y: number, size: number, conMiniatura: boolean): Vista {
     const izquierda = conMiniatura ? 128 : 54;
-    const cuerpo = texto(this, 0, 0, t.texto, { size, ancho: ANCHO_TARJETA - izquierda - 12, interlineado: 2 });
-    const alto = t.texto ? Math.max(58, cuerpo.height + 32) : 56;
+    const cuerpo = texto(this, 0, 0, t.texto, { size, ancho: ANCHO_TARJETA - izquierda - 12, interlineado: 1 });
+    const alto = t.texto ? Math.max(44, cuerpo.height + 28) : 56;
     const c = zonaTactil(this, ANCHO / 2, y + alto / 2, ANCHO_TARJETA, alto, () => this.alternar(t.id));
     const fondo = this.add.graphics();
     const etiqueta = texto(this, -ANCHO_TARJETA / 2 + izquierda, -alto / 2 + 9, t.etiqueta.toUpperCase(), {
@@ -89,7 +91,7 @@ export class OrdenarScene extends MisionBase {
       espaciado: 1,
       mono: !!t.cordones,
     });
-    cuerpo.setPosition(-ANCHO_TARJETA / 2 + izquierda, -alto / 2 + 25);
+    cuerpo.setPosition(-ANCHO_TARJETA / 2 + izquierda, -alto / 2 + 23);
     const insignia = texto(this, -ANCHO_TARJETA / 2 + 26, 0, '', {
       size: 17,
       negrita: true,
