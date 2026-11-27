@@ -35,28 +35,40 @@ function de(conArticulo: string): string {
 }
 
 export function generarContenedor(rng: Rng): PuzleEmparejar {
-  const restos = barajar(rng, RESTOS).slice(0, 3);
-  const lugares = barajar(rng, PROCEDENCIAS).slice(0, 3);
-  const solucion = barajar(rng, [0, 1, 2]);
-  const pool: Condicion<number[]>[] = [];
-  restos.forEach((r, i) =>
-    lugares.forEach((l, j) =>
+  for (let intento = 0; intento < 100; intento++) {
+    const restos = barajar(rng, RESTOS);
+    const lugares = barajar(rng, PROCEDENCIAS);
+    const solucion = barajar(rng, [0, 1, 2, 3, 4, 5]);
+    const pool: Condicion<number[]>[] = [];
+    // Dos afirmaciones directas como mucho; el resto se deduce por descarte.
+    for (const i of barajar(rng, [0, 1, 2, 3, 4, 5]).slice(0, 2)) {
+      const r = restos[i];
       pool.push({
-        texto: `${elegir(rng, FUENTES)} ${r.conArticulo} no salió ${de(l.conArticulo)}.`,
-        cumple: (p) => p[i] !== j,
-      }),
-    ),
-  );
-  const pistas = elegirCondiciones(rng, permutaciones(3), (p) => p.every((v, i) => v === solucion[i]), pool) ?? [];
-  const correcto: Record<string, string> = {};
-  restos.forEach((r, i) => (correcto[r.id] = lugares[solucion[i]].id));
-  return {
-    izquierda: restos.map(({ id, nombre }) => ({ id, nombre })),
-    derecha: lugares.map(({ id, nombre }) => ({ id, nombre })),
-    correcto,
-    pistas,
-    tituloIzq: 'Restos',
-    tituloDer: 'Procedencia',
-    tituloPistas: 'Informe de seguridad',
-  };
+        texto: `${elegir(rng, FUENTES)} ${r.conArticulo} salió ${de(lugares[solucion[i]].conArticulo)}.`,
+        cumple: (p) => p[i] === solucion[i],
+      });
+    }
+    restos.forEach((r, i) =>
+      lugares.forEach((l, j) =>
+        pool.push({
+          texto: `${elegir(rng, FUENTES)} ${r.conArticulo} no salió ${de(l.conArticulo)}.`,
+          cumple: (p) => p[i] !== j,
+        }),
+      ),
+    );
+    const pistas = elegirCondiciones(rng, permutaciones(6), (p) => p.every((v, i) => v === solucion[i]), pool, 25);
+    if (!pistas || pistas.length > 10) continue;
+    const correcto: Record<string, string> = {};
+    restos.forEach((r, i) => (correcto[r.id] = lugares[solucion[i]].id));
+    return {
+      izquierda: restos.map(({ id, nombre }) => ({ id, nombre })),
+      derecha: lugares.map(({ id, nombre }) => ({ id, nombre })),
+      correcto,
+      pistas,
+      tituloIzq: 'Restos',
+      tituloDer: 'Procedencia',
+      tituloPistas: 'Informe de seguridad',
+    };
+  }
+  throw new Error('No se pudo generar el informe del contenedor');
 }

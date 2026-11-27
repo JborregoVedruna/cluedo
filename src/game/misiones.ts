@@ -119,7 +119,7 @@ const datos: Omit<InfoMision, 'numeral' | 'escena'>[] = [
     referencia: 'Testimonio de los invitados',
     grupo: 'testimonio',
     instrucciones:
-      'El reloj de Puyana se paró a las 3:50. Ordena lo que cuentan los invitados sobre la noche, del primer suceso al último.',
+      'El reloj de Puyana se paró a las 3:50. Seis invitados cuentan qué pasó y cuándo. Ordena los sucesos del primero al último.',
     introPista:
       'Con la cronología ordenada, los invitados firman una declaración. Crúzala con tus descartes y con los otros testimonios.',
   },
@@ -127,7 +127,7 @@ const datos: Omit<InfoMision, 'numeral' | 'escena'>[] = [
     titulo: 'El contenedor',
     referencia: 'Testimonio de seguridad',
     grupo: 'testimonio',
-    instrucciones: 'Junto al cuerpo, seguridad encontró tres restos. Toca un resto y después el sitio del hotel del que salió.',
+    instrucciones: 'Junto al cuerpo, seguridad encontró seis restos. Toca un resto y después el sitio del hotel del que salió.',
     introPista:
       'Con los restos identificados, el jefe de seguridad del hotel firma su declaración. Crúzala con tus descartes y con los otros testimonios.',
   },

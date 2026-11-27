@@ -59,22 +59,34 @@ const DURACION: Record<number, string> = {
 
 export function duracion(min: number): string {
   if (min <= 60) return DURACION[min];
-  const resto = DURACION[min - 60].replace('un cuarto de hora', 'cuarto').replace('media hora', 'media');
-  return `una hora y ${resto}`;
+  const horas = Math.floor(min / 60);
+  const resto = min % 60;
+  const textoHoras = horas === 1 ? 'una hora' : `${NUMEROS[horas]} horas`;
+  if (resto === 0) return textoHoras;
+  const textoResto = DURACION[resto]
+    .replace('tres cuartos de hora', 'tres cuartos')
+    .replace('un cuarto de hora', 'cuarto')
+    .replace('media hora', 'media');
+  return `${textoHoras} y ${textoResto}`;
 }
 
 type Formato = 'digital' | 'palabras' | 'reloj' | 'relativo';
 
-export function generarReloj(rng: Rng): PuzleOrden {
-  const tiempos: number[] = [3 * 60 + 25 - 5 * entero(rng, 0, 2)]; // último suceso: 3:15–3:25
-  for (let i = 0; i < 3; i++) tiempos.unshift(tiempos[0] - 5 * entero(rng, 2, 5));
+function elegirFormato(rng: Rng): Formato {
+  return (['digital', 'palabras', 'reloj'] as const)[entero(rng, 0, 2)];
+}
 
-  const sucesos = barajar(rng, SUCESOS).slice(0, 4);
-  const testigos = barajar(rng, SOSPECHOSOS).slice(0, 4).map((s) => s.nombre);
-  const formatos = barajar<Formato>(rng, ['digital', 'palabras', 'reloj', 'relativo']);
-  const iRelativo = formatos.indexOf('relativo');
-  const anclas = [0, 1, 2, 3].filter((i) => i !== iRelativo);
-  const ancla = anclas[entero(rng, 0, anclas.length - 1)];
+export function generarReloj(rng: Rng): PuzleOrden {
+  const N = 6;
+  const tiempos: number[] = [3 * 60 + 25 - 5 * entero(rng, 0, 2)]; // último suceso: 3:15–3:25
+  for (let i = 0; i < N - 1; i++) tiempos.unshift(tiempos[0] - 5 * entero(rng, 2, 4));
+
+  const sucesos = barajar(rng, SUCESOS).slice(0, N);
+  const testigos = barajar(rng, SOSPECHOSOS).slice(0, N).map((s) => s.nombre);
+  // Seis testimonios: cada formato de hora al menos una vez y dos relativos a otro suceso.
+  const formatos = barajar<Formato>(rng, ['digital', 'palabras', 'reloj', 'relativo', 'relativo', elegirFormato(rng)]);
+  const anclas = formatos.map((f, i) => (f === 'relativo' ? -1 : i)).filter((i) => i >= 0);
+  const anclaDe = formatos.map(() => anclas[entero(rng, 0, anclas.length - 1)]);
 
   const tarjetas = tiempos.map((minuto, i) => {
     const suceso = capitalizar(sucesos[i]);
@@ -90,6 +102,7 @@ export function generarReloj(rng: Rng): PuzleOrden {
         texto = `${suceso} ${duracion(PARADA - minuto)} antes de que se parara el reloj de Puyana.`;
         break;
       default: {
+        const ancla = anclaDe[i];
         const dif = minuto - tiempos[ancla];
         const referencia = `del momento en que ${sucesos[ancla]}`;
         texto = dif > 0 ? `${suceso} ${duracion(dif)} después ${referencia}.` : `${suceso} ${duracion(-dif)} antes ${referencia}.`;
