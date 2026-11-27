@@ -545,7 +545,7 @@ export const HISTORIA_PREDETERMINADA = {
   /** Semilla fija: los puzles y las pistas también son siempre los mismos. */
   semilla: 20261127,
   resolucion: [
-    'Kike el verde nunca olvidó aquel «Pirri» en plena Gran Vía. Toda la noche fingió estar al teléfono con su pareja, pero la llamada la colgó en cuanto se fue la luz.',
+    'Kike el verde nunca olvidó aquel «Pirri» en plena Gran Vía. Toda la noche intentó desahogarse con su pareja, pero la llamada la colgó en cuanto se fue la luz.',
     'A oscuras, mientras la terraza entera cantaba «Pájaros de barro», le ofreció a Puyana un combinado de autor «para hacer las paces». Llevaba unas gotas de sedante inodoro.',
     'Puyana, mareado, salió a la pasarela de cristal a tomar el aire. Se apoyó en la barandilla, justo donde ahora hay una grieta a la altura del hombro, y cayó al vacío.',
     'Su reloj se paró a las 3:50 con el golpe. A las 4, con la terraza ya cerrada, el personal del hotel lo encontró en el contenedor del callejón, veintisiete plantas más abajo.',
