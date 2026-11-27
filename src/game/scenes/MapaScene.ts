@@ -1,18 +1,19 @@
-// Vestíbulo de la mansión: las 5 misiones, su estado y el progreso de la investigación.
+// Mapa de la terraza: las 15 misiones agrupadas (lugares, armas y testimonios) y el progreso.
 
 import { Scene } from 'phaser';
-import { eventos, obtener, puedeAcusar, TOTAL_MISIONES } from '../core/estado.ts';
+import { eventos, obtener, puedeAcusar, TOTAL_MISIONES, VIDAS_INICIALES, vidas } from '../core/estado.ts';
 import { busUi } from '../core/eventos.ts';
 import type { EstadoMision } from '../core/tipos.ts';
-import { MISIONES } from '../misiones.ts';
+import { MISIONES, type GrupoMision } from '../misiones.ts';
 import { ANCHO, C, H, fondo, prepararCamara, rectRedondo, texto, zonaTactil } from '../ui/phaserUi.ts';
 
-const ESTADOS: Record<EstadoMision, { texto: string; color: string }> = {
-  bloqueada: { texto: 'Bloqueada', color: H.gris },
-  disponible: { texto: 'Disponible · toca para investigar', color: H.dorado400 },
-  descarte: { texto: 'Pista obtenida · descarte pendiente', color: H.rojo },
-  completada: { texto: 'Completada · toca para releer la pista', color: H.verde },
-};
+const GRUPOS: { grupo: GrupoMision; titulo: string; color: string }[] = [
+  { grupo: 'lugar', titulo: 'UNA MISIÓN EN CADA LUGAR', color: H.cian400 },
+  { grupo: 'arma', titulo: 'UNA MISIÓN POR CADA ARMA', color: H.fucsia600 },
+  { grupo: 'testimonio', titulo: 'TESTIMONIOS · SE ABREN AL TERMINAR LAS 12', color: H.champan400 },
+];
+
+const ICONO: Record<EstadoMision, string> = { bloqueada: '🔒', disponible: '', descarte: '!', completada: '✓' };
 
 export class MapaScene extends Scene {
   private aviso!: Phaser.GameObjects.Text;
@@ -26,93 +27,75 @@ export class MapaScene extends Scene {
     fondo(this);
     const partida = obtener();
 
-    texto(this, ANCHO / 2, 34, 'VILLA PUYANA', {
-      size: 12,
-      color: H.dorado500,
+    texto(this, ANCHO / 2, 30, 'HOTEL RIU PLAZA ESPAÑA · PLANTA 27', {
+      size: 10.5,
+      color: H.cian400,
       origen: [0.5, 0.5],
       serif: false,
       negrita: true,
-      espaciado: 5,
+      espaciado: 2,
     });
-    texto(this, ANCHO / 2, 62, 'La noche del crimen', { size: 25, origen: [0.5, 0.5] });
-    texto(this, ANCHO / 2, 92, 'Resuelve las cinco misiones y reúne las pistas.', {
-      size: 13,
+    texto(this, ANCHO / 2, 56, 'La pre boda de Juanky y Paula', { size: 21, origen: [0.5, 0.5], negrita: true });
+    texto(this, ANCHO / 2, 80, 'Resuelve las misiones en el orden que quieras.', {
+      size: 12,
       color: H.gris,
       origen: [0.5, 0.5],
-      cursiva: true,
+      serif: false,
     });
 
-    const alto = 88;
-    MISIONES.forEach((info, i) => {
-      const estado = partida.misiones[i].estado;
-      const y = 120 + i * (alto + 10) + alto / 2;
-      const ancho = ANCHO - 40;
-      const c = zonaTactil(this, ANCHO / 2, y, ancho, alto, () => this.tocar(i));
-      const g = this.add.graphics();
-      const activa = estado === 'disponible' || estado === 'descarte';
-      rectRedondo(g, -ancho / 2, -alto / 2, ancho, alto, {
-        relleno: activa ? C.burdeos900 : C.carbon800,
-        alfa: estado === 'bloqueada' ? 0.55 : 1,
-        borde: activa ? C.dorado500 : estado === 'completada' ? C.verde : C.carbon600,
-        alfaBorde: activa ? 0.9 : 0.6,
-        radio: 14,
+    const anchoCelda = (ANCHO - 40 - 16) / 3;
+    const altoCelda = 80;
+    let y = 100;
+    for (const g of GRUPOS) {
+      texto(this, 20, y, g.titulo, { size: 9.5, color: g.color, serif: false, negrita: true, espaciado: 1.5 });
+      y += 16;
+      const indices = MISIONES.map((m, i) => (m.grupo === g.grupo ? i : -1)).filter((i) => i >= 0);
+      indices.forEach((i, k) => {
+        const col = k % 3;
+        const fila = Math.floor(k / 3);
+        const x = 20 + col * (anchoCelda + 8) + anchoCelda / 2;
+        const cy = y + fila * (altoCelda + 8) + altoCelda / 2;
+        this.celda(i, x, cy, anchoCelda, altoCelda, partida.misiones[i].estado);
       });
-      const cx = -ancho / 2 + 36;
-      g.fillStyle(estado === 'bloqueada' ? C.carbon700 : C.carbon950, 1).fillCircle(cx, 0, 22);
-      g.lineStyle(1.5, estado === 'completada' ? C.verde : C.dorado500, estado === 'bloqueada' ? 0.35 : 1).strokeCircle(cx, 0, 22);
-      const numeral = texto(this, cx, 0, estado === 'completada' ? '✓' : info.numeral, {
-        size: 17,
-        negrita: true,
-        color: estado === 'completada' ? H.verde : estado === 'bloqueada' ? H.gris : H.dorado400,
-        origen: [0.5, 0.5],
-      });
-      const xTexto = cx + 36;
-      const titulo = texto(this, xTexto, -alto / 2 + 14, info.titulo, {
-        size: 17,
-        negrita: true,
-        color: estado === 'bloqueada' ? H.gris : H.crema,
-      });
-      const lugar = texto(this, xTexto, -alto / 2 + 38, info.lugar, { size: 12.5, cursiva: true, color: H.gris });
-      const chip = texto(this, xTexto, -alto / 2 + 60, ESTADOS[estado].texto, {
-        size: 11.5,
-        color: ESTADOS[estado].color,
-        serif: false,
-        negrita: true,
-      });
-      c.add([g, numeral, titulo, lugar, chip]);
-      if (activa) {
-        this.tweens.add({ targets: c, scale: { from: 1, to: 1.015 }, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-      }
-    });
+      y += Math.ceil(indices.length / 3) * (altoCelda + 8) + 4;
+    }
 
-    // Progreso
     const completadas = partida.misiones.filter((m) => m.estado === 'completada').length;
-    const yBarra = 120 + TOTAL_MISIONES * (alto + 10) + 14;
+    const yBarra = y + 6;
     const gb = this.add.graphics();
-    rectRedondo(gb, 30, yBarra, ANCHO - 60, 8, { relleno: C.carbon700, radio: 4 });
-    if (completadas > 0)
-      rectRedondo(gb, 30, yBarra, ((ANCHO - 60) * completadas) / TOTAL_MISIONES, 8, { relleno: C.dorado500, radio: 4 });
-    texto(this, ANCHO / 2, yBarra + 24, `Misiones completadas: ${completadas} / ${TOTAL_MISIONES}`, {
-      size: 13,
-      color: H.crema,
-      origen: [0.5, 0.5],
+    rectRedondo(gb, 30, yBarra, ANCHO - 60, 8, { relleno: C.noche700, radio: 4 });
+    if (completadas > 0) {
+      rectRedondo(gb, 30, yBarra, ((ANCHO - 60) * completadas) / TOTAL_MISIONES, 8, { relleno: C.fucsia600, radio: 4 });
+    }
+    const v = vidas();
+    texto(this, ANCHO - 30, yBarra + 22, '♥'.repeat(v) + '♡'.repeat(Math.max(0, VIDAS_INICIALES - v)), {
+      size: 15,
+      color: v === 0 ? H.rojo : H.fucsia600,
+      origen: [1, 0.5],
+      serif: false,
+      espaciado: 2,
+    });
+    texto(this, 30, yBarra + 22, `Misiones: ${completadas} / ${TOTAL_MISIONES}`, {
+      size: 12.5,
+      origen: [0, 0.5],
       serif: false,
     });
 
     let pie = 'Abre el Cuaderno cuando quieras para revisar tus descartes.';
-    if (partida.resuelta) pie = 'Caso resuelto. Puedes empezar una nueva partida desde el Cuaderno.';
-    else if (puedeAcusar()) pie = 'Todas las pistas están sobre la mesa. Pulsa «Resolver el caso» cuando estés seguro.';
-    this.aviso = texto(this, ANCHO / 2, yBarra + 54, pie, {
-      size: 12.5,
-      cursiva: true,
-      color: puedeAcusar() ? H.dorado400 : H.gris,
+    if (partida.perdida) pie = 'Has perdido la partida. Empieza una nueva desde el Cuaderno o desde el inicio.';
+    else if (partida.resuelta) pie = 'Caso resuelto. Puedes empezar otra partida desde el Cuaderno.';
+    else if (puedeAcusar()) pie = 'Todas las pistas están sobre la mesa. Pulsa «Resolver el caso» cuando lo tengas.';
+    this.aviso = texto(this, ANCHO / 2, yBarra + 48, pie, {
+      size: 12,
+      color: puedeAcusar() ? H.champan400 : H.gris,
       origen: [0.5, 0.5],
       align: 'center',
       ancho: ANCHO - 60,
+      serif: false,
     });
 
     // Solo se repinta si cambia algo visible aquí (no al marcar notas en el cuaderno).
-    const firma = (p = obtener()) => `${p.misiones.map((m) => m.estado).join()}|${p.resuelta}`;
+    const firma = (p = obtener()) => `${p.misiones.map((m) => m.estado).join()}|${p.resuelta}|${p.semilla}|${p.vidas}|${p.perdida}`;
     const actual = firma(partida);
     const off = eventos.on('cambio', (p) => {
       if (this.scene.isActive() && firma(p) !== actual) this.scene.restart();
@@ -120,15 +103,75 @@ export class MapaScene extends Scene {
     this.events.once('shutdown', off);
   }
 
+  private celda(i: number, x: number, y: number, w: number, h: number, estado: EstadoMision): void {
+    const info = MISIONES[i];
+    const c = zonaTactil(this, x, y, w, h, () => this.tocar(i));
+    const g = this.add.graphics();
+    const activa = estado === 'disponible' || estado === 'descarte';
+    const borde =
+      estado === 'completada' ? C.verde : estado === 'descarte' ? C.rojo : activa ? C.fucsia600 : C.noche600;
+    rectRedondo(g, -w / 2, -h / 2, w, h, {
+      relleno: activa ? C.noche700 : C.noche800,
+      alfa: estado === 'bloqueada' ? 0.5 : 1,
+      borde,
+      alfaBorde: estado === 'bloqueada' ? 0.5 : 0.95,
+      grosor: activa ? 2 : 1.5,
+      radio: 12,
+    });
+    const apagado = estado === 'bloqueada';
+    const numero = texto(this, -w / 2 + 9, -h / 2 + 7, info.numeral, {
+      size: 11,
+      negrita: true,
+      color: apagado ? H.gris : H.champan400,
+      serif: false,
+    });
+    const icono = texto(this, w / 2 - 9, -h / 2 + 6, ICONO[estado], {
+      size: 12,
+      negrita: true,
+      color: estado === 'completada' ? H.verde : H.rojo,
+      origen: [1, 0],
+      serif: false,
+    });
+    // Primero la referencia (abajo, hasta 2 líneas); el título ocupa el hueco que queda encima.
+    const ref = texto(this, -w / 2 + 9, h / 2 - 6, info.referencia, {
+      size: 8.5,
+      color: H.gris,
+      serif: false,
+      ancho: w - 14,
+      origen: [0, 1],
+      interlineado: 0,
+    });
+    const yTitulo = -h / 2 + 21;
+    const huecoTitulo = h / 2 - 6 - ref.height - 3 - yTitulo;
+    let titulo!: Phaser.GameObjects.Text;
+    for (const size of [12, 11, 10, 9.5, 9]) {
+      titulo?.destroy();
+      titulo = texto(this, -w / 2 + 9, yTitulo, info.titulo, {
+        size,
+        negrita: true,
+        color: apagado ? H.gris : H.crema,
+        ancho: w - 16,
+        interlineado: 0,
+      });
+      if (titulo.height <= huecoTitulo) break;
+    }
+    c.add([g, numero, icono, titulo, ref]);
+    if (activa) {
+      this.tweens.add({ targets: c, scale: { from: 1, to: 1.03 }, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    }
+  }
+
   private tocar(i: number): void {
     const m = obtener().misiones[i];
-    if (m.estado === 'disponible') {
-      this.cameras.main.fadeOut(180, 20, 18, 20);
+    if (obtener().perdida) {
+      busUi.emit('partida-perdida', {});
+    } else if (m.estado === 'disponible') {
+      this.cameras.main.fadeOut(160, 14, 10, 28);
       this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start(MISIONES[i].escena));
     } else if (m.estado === 'descarte' || m.estado === 'completada') {
       busUi.emit('ver-pista', { mision: i });
     } else {
-      this.aviso.setText('Esa misión sigue bloqueada: completa antes la anterior.');
+      this.aviso.setText('Los testimonios se abren cuando termines las 12 misiones de lugares y armas.');
       this.aviso.setColor(H.rojo);
     }
   }

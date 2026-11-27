@@ -10,21 +10,24 @@ export interface Pista {
   mision: number;
   titulo: string;
   parrafos: string[];
-  /** Afirmaciones condicionales (solo en el careo final). */
+  /** Afirmaciones condicionales (solo en los testimonios). */
   condicionales?: string[];
-  /** Elementos que la pista exculpa expresamente. */
-  senalados?: Partial<Seleccion>;
+  /** Elemento que la pista exculpa expresamente (misiones de descarte). */
+  senalado?: { categoria: Categoria; id: string };
 }
 
 export interface RegistroMision {
   estado: EstadoMision;
   fallos: number;
   pista?: Pista;
-  descarte?: Seleccion;
+  /** Categoría que esta misión permite descartar (se asigna al resolver el puzle). */
+  categoria?: Categoria;
+  /** Elemento que el jugador descartó en esta misión. */
+  descarte?: string;
 }
 
 export interface Partida {
-  version: 1;
+  version: 2;
   semilla: number;
   solucion: Seleccion;
   descartados: Record<Categoria, string[]>;
@@ -33,4 +36,10 @@ export interface Partida {
   notasLibres: string;
   acusaciones: number;
   resuelta: boolean;
+  /** Historia aleatoria o la predeterminada (siempre la misma). */
+  modo?: 'aleatorio' | 'predeterminado';
+  /** Vidas que quedan (cada respuesta fallida en una misión resta una). */
+  vidas?: number;
+  /** La partida se perdió por fallar sin vidas. */
+  perdida?: boolean;
 }

@@ -1,5 +1,6 @@
 ---
 import type { Elemento } from '../data/caso.ts';
+import { estiloTitulo } from '../lib/tituloFluido.ts';
 
 interface Bloque {
   titulo: string;
@@ -17,8 +18,6 @@ interface Props {
 
 const { elemento, indice, total, categoria, subtitulo, bloques } = Astro.props;
 const numero = String(indice).padStart(2, '0');
-const palabraMasLarga = Math.max(...elemento.nombre.split(' ').map((p) => p.length));
-const tituloLargo = palabraMasLarga > 9;
 const lado = indice % 2 === 0 ? 'izquierda' : 'derecha';
 ---
 
@@ -54,36 +53,34 @@ const lado = indice % 2 === 0 ? 'izquierda' : 'derecha';
   </div>
 
   <div class="relative mx-auto w-full max-w-5xl px-5 sm:px-8">
-    <p data-anim class="font-sans text-[11px] font-bold tracking-[0.35em] text-dorado-500 uppercase">
+    <p data-anim class="font-sans text-[11px] font-bold tracking-[0.35em] text-champan-500 uppercase">
       {numero} / {String(total).padStart(2, '0')} · {categoria}
     </p>
 
     <h2
       id={`t-${elemento.id}`}
       data-revelar
-      class:list={[
-        'mt-3 font-display leading-[0.88] text-crema uppercase hyphens-auto [overflow-wrap:anywhere]',
-        tituloLargo ? 'text-[clamp(2.3rem,9.5vw,6.5rem)]' : 'text-[clamp(3rem,14vw,8.5rem)]',
-      ]}
+      class="mt-3 py-[0.06em] font-display leading-[0.95] font-extrabold tracking-tight text-crema uppercase"
+      style={estiloTitulo(elemento.nombre, 14, 8.5)}
     >
       {elemento.nombre}
     </h2>
 
     {subtitulo && <p data-anim class="mt-3 font-sans text-sm text-crema/60">{subtitulo}</p>}
 
-    <p data-anim class="mt-5 max-w-xl font-display text-xl leading-snug text-dorado-400 italic sm:text-2xl">
+    <p data-anim class="mt-5 max-w-xl font-display text-xl leading-snug text-champan-400 italic sm:text-2xl">
       «{elemento.lema}»
     </p>
 
     <div class="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.35fr)] lg:gap-12">
       <dl
         data-anim
-        class="grid grid-cols-2 gap-px self-start overflow-hidden rounded-2xl border border-dorado-500/20 bg-dorado-500/20"
+        class="grid grid-cols-2 gap-px self-start overflow-hidden rounded-2xl border border-champan-500/20 bg-champan-500/20"
       >
         {
           elemento.ficha.map((d) => (
-            <div class="bg-carbon-950/85 p-4 backdrop-blur">
-              <dt class="font-sans text-[10px] font-bold tracking-[0.2em] text-dorado-500 uppercase">{d.etiqueta}</dt>
+            <div class="bg-noche-950/85 p-4 backdrop-blur">
+              <dt class="font-sans text-[10px] font-bold tracking-[0.2em] text-champan-500 uppercase">{d.etiqueta}</dt>
               <dd class="mt-1 font-sans text-sm leading-snug text-crema">{d.valor}</dd>
             </div>
           ))
@@ -94,7 +91,7 @@ const lado = indice % 2 === 0 ? 'izquierda' : 'derecha';
         {
           bloques.map((b) => (
             <article data-anim class="border-l-2 pl-4" style={`border-color: ${elemento.tono}`}>
-              <h3 class="font-sans text-[11px] font-bold tracking-[0.25em] text-dorado-500 uppercase">{b.titulo}</h3>
+              <h3 class="font-sans text-[11px] font-bold tracking-[0.25em] text-champan-500 uppercase">{b.titulo}</h3>
               <p class="mt-2 font-display text-[17px] leading-relaxed text-crema/90 sm:text-lg">{b.texto}</p>
             </article>
           ))

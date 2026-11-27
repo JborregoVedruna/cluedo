@@ -1,6 +1,8 @@
-import { generarNota, type Fragmento, type PuzleNota } from '../puzzles/nota.ts';
+// La nota rasgada: reconstruir el orden de diez fragmentos.
+
 import type { Rng } from '../core/rng.ts';
-import { ANCHO, C, H, texto, zonaTactil } from '../ui/phaserUi.ts';
+import { generarNota, type Fragmento, type PuzleNota } from '../puzzles/nota.ts';
+import { ANCHO, C, H, boton, texto, zonaTactil } from '../ui/phaserUi.ts';
 import { MisionBase, Y_MENSAJE } from './MisionBase.ts';
 
 /** Dibuja un trozo de papel con bordes rasgados. */
@@ -16,7 +18,10 @@ function papelRasgado(g: Phaser.GameObjects.Graphics, x: number, y: number, w: n
   for (let i = 1; i <= 3; i++) puntos.push({ x: x + w - azar() * 4, y: y + (h * i) / 4 });
   for (let i = pasos; i >= 0; i--) puntos.push({ x: x + (w * i) / pasos, y: y + h - azar() * 4 });
   for (let i = 3; i >= 1; i--) puntos.push({ x: x + azar() * 4, y: y + (h * i) / 4 });
-  g.fillStyle(0x000000, 0.35).fillPoints(puntos.map((p) => ({ x: p.x + 2, y: p.y + 3 })), true);
+  g.fillStyle(0x000000, 0.35).fillPoints(
+    puntos.map((p) => ({ x: p.x + 2, y: p.y + 3 })),
+    true,
+  );
   g.fillStyle(color, 1).fillPoints(puntos, true);
 }
 
@@ -27,8 +32,8 @@ export class NotaScene extends MisionBase {
   private piezas = new Map<string, Phaser.GameObjects.Container>();
   private bloqueado = false;
 
-  constructor() {
-    super(3);
+  constructor(indice: number) {
+    super(indice);
   }
 
   protected construir(rng: Rng): void {
@@ -37,40 +42,54 @@ export class NotaScene extends MisionBase {
     this.piezas = new Map();
     this.bloqueado = false;
 
-    // Nota reconstruida
-    const yNota = this.yLibre(6);
-    const altoNota = 168;
+    const yNota = this.yLibre(4);
+    const altoNota = 132;
     const g = this.add.graphics();
-    papelRasgado(g, 26, yNota, ANCHO - 52, altoNota, 7, C.papel);
-    g.lineStyle(1, 0x8f1d2c, 0.25);
-    for (let ly = yNota + 44; ly < yNota + altoNota - 10; ly += 26) g.lineBetween(40, ly, ANCHO - 40, ly);
-    texto(this, 42, yNota + 14, 'NOTA DE PUYANA', { size: 10.5, color: '#8f1d2c', negrita: true, serif: false, espaciado: 2 });
-    this.textoNota = texto(this, 42, yNota + 34, '', {
-      size: 17,
+    papelRasgado(g, 22, yNota, ANCHO - 44, altoNota, 7, C.papel);
+    g.lineStyle(1, C.fucsia600, 0.25);
+    for (let ly = yNota + 40; ly < yNota + altoNota - 8; ly += 22) g.lineBetween(36, ly, ANCHO - 36, ly);
+    texto(this, 36, yNota + 12, 'NOTA DE PUYANA', { size: 10, color: '#b0127f', negrita: true, serif: false, espaciado: 2 });
+    this.textoNota = texto(this, 36, yNota + 28, '', {
+      size: 13.5,
       cursiva: true,
       color: H.tinta,
-      ancho: ANCHO - 84,
-      interlineado: 6,
+      ancho: ANCHO - 72,
+      interlineado: 5,
     });
 
-    // Fragmentos
-    const yFrag = yNota + altoNota + 18;
-    const paso = Math.min(52, Math.floor((Y_MENSAJE - 30 - yFrag) / this.puzle.fragmentos.length));
-    this.puzle.fragmentos.forEach((f, i) => this.crearPieza(f, i, yFrag + i * paso + paso / 2, paso - 8));
+    // Diez trozos en dos columnas
+    const yFrag = yNota + altoNota + 12;
+    const filas = Math.ceil(this.puzle.fragmentos.length / 2);
+    const alto = Math.min(46, Math.floor((Y_MENSAJE - 62 - yFrag) / filas) - 6);
+    const ancho = (ANCHO - 52) / 2;
+    this.puzle.fragmentos.forEach((f, i) => {
+      const col = i % 2;
+      const fila = Math.floor(i / 2);
+      const x = 22 + ancho / 2 + col * (ancho + 8);
+      const y = yFrag + fila * (alto + 6) + alto / 2;
+      this.crearPieza(f, i, x, y, ancho, alto);
+    });
 
-    this.botonAccion('Empezar de nuevo', () => this.reiniciar());
-    this.avisar('Toca los fragmentos en el orden en que se leen.');
+    const yBotones = yFrag + filas * (alto + 6) + 18;
+    boton(this, ANCHO / 2 - 82, yBotones, 150, 34, 'Deshacer último', () => this.deshacer(), 'fantasma', 12.5);
+    boton(this, ANCHO / 2 + 82, yBotones, 150, 34, 'Empezar de nuevo', () => this.reiniciar(), 'fantasma', 12.5);
+    this.botonAccion('Comprobar la nota', () => this.comprobar());
+    this.avisar('Toca los trozos en el orden en que se leen.');
     this.actualizarNota();
   }
 
-  private crearPieza(f: Fragmento, i: number, y: number, alto: number): void {
-    const ancho = ANCHO - 60;
-    const c = zonaTactil(this, ANCHO / 2, y, ancho, alto, () => this.colocar(f.id));
+  private crearPieza(f: Fragmento, i: number, x: number, y: number, ancho: number, alto: number): void {
+    const c = zonaTactil(this, x, y, ancho, alto, () => this.colocar(f.id));
     const g = this.add.graphics();
-    papelRasgado(g, -ancho / 2, -alto / 2, ancho, alto, 31 + i * 17, 0xd9c9a6);
-    const t = texto(this, 0, 0, f.texto, { size: 15, cursiva: true, color: H.tinta, origen: [0.5, 0.5] });
+    papelRasgado(g, -ancho / 2, -alto / 2, ancho, alto, 31 + i * 17, 0xe7dcc4);
+    let t!: Phaser.GameObjects.Text;
+    for (const size of [13, 12, 11]) {
+      t?.destroy();
+      t = texto(this, 0, 0, f.texto, { size, cursiva: true, color: H.tinta, origen: [0.5, 0.5], ancho: ancho - 14, align: 'center' });
+      if (t.height <= alto - 6) break;
+    }
     c.add([g, t]);
-    c.setAngle((i % 2 === 0 ? -1 : 1) * (0.6 + (i % 3) * 0.4));
+    c.setAngle((i % 2 === 0 ? -1 : 1) * (0.5 + (i % 3) * 0.4));
     this.piezas.set(f.id, c);
   }
 
@@ -81,16 +100,25 @@ export class NotaScene extends MisionBase {
     pieza.disableInteractive();
     this.tweens.add({ targets: pieza, alpha: 0.18, scale: 0.96, duration: 160 });
     this.actualizarNota();
+    if (this.colocados.length === this.puzle.orden.length) this.avisar('Ya están todos. Léela entera y pulsa «Comprobar la nota».');
+  }
 
-    if (this.colocados.length === this.puzle.orden.length) {
-      const bien = this.colocados.every((x, i) => x === this.puzle.orden[i]);
-      if (bien) this.exito('El mensaje tiene sentido. Le das la vuelta al papel...');
-      else {
-        this.bloqueado = true;
-        this.fallo('Así el mensaje no se entiende. Fíjate en mayúsculas y puntos.');
-        this.time.delayedCall(1100, () => this.reiniciar(false));
-      }
+  private comprobar(): void {
+    if (this.colocados.length < this.puzle.orden.length) {
+      this.avisar(`Faltan ${this.puzle.orden.length - this.colocados.length} trozos por colocar.`, 'error');
+      return;
     }
+    if (this.colocados.every((x, i) => x === this.puzle.orden[i])) {
+      this.exito('El mensaje tiene sentido. Le das la vuelta al papel...');
+      return;
+    }
+    let bien = 0;
+    while (this.colocados[bien] === this.puzle.orden[bien]) bien++;
+    this.fallo(
+      bien === 0
+        ? 'Así no se entiende. Ni siquiera el primer trozo está en su sitio.'
+        : `Así no se entiende. Los ${bien} primeros trozos están bien; a partir de ahí, no.`,
+    );
   }
 
   private actualizarNota(): void {
@@ -98,7 +126,16 @@ export class NotaScene extends MisionBase {
     this.textoNota.setText(frases.length ? frases.join(' ') : '…');
   }
 
-  private reiniciar(limpiarMensaje = true): void {
+  private deshacer(): void {
+    const id = this.colocados.pop();
+    if (!id) return;
+    const p = this.piezas.get(id)!;
+    p.setInteractive({ useHandCursor: true });
+    this.tweens.add({ targets: p, alpha: 1, scale: 1, duration: 160 });
+    this.actualizarNota();
+  }
+
+  private reiniciar(): void {
     this.bloqueado = false;
     this.colocados = [];
     for (const p of this.piezas.values()) {
@@ -106,11 +143,11 @@ export class NotaScene extends MisionBase {
       this.tweens.add({ targets: p, alpha: 1, scale: 1, duration: 160 });
     }
     this.actualizarNota();
-    if (limpiarMensaje) this.avisar('Toca los fragmentos en el orden en que se leen.');
+    this.avisar('Toca los trozos en el orden en que se leen.');
   }
 
   protected textoAyuda(): string {
-    const [a, b] = this.puzle.orden.map((id) => this.puzle.fragmentos.find((f) => f.id === id)!.texto);
-    return `Ayuda: la nota empieza «${a} ${b}…»`;
+    const textos = this.puzle.orden.slice(0, 3).map((id) => this.puzle.fragmentos.find((f) => f.id === id)!.texto);
+    return `Ayuda: la nota empieza «${textos.join(' ')}…»`;
   }
 }

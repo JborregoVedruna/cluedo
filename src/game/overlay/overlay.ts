@@ -4,21 +4,31 @@
 import {
   CATEGORIAS,
   ELEMENTOS,
+  HISTORIA_PREDETERMINADA,
   NOMBRE_CATEGORIA,
   porId,
+  type Arma,
   type Categoria,
-  type Sospechoso,
+  type Lugar,
 } from '../../data/caso.ts';
 import {
   acusar,
+  afirmacionesObtenidas,
   alternarMarca,
   candidatos,
+  esTestimonio,
   eventos,
   guardarNotas,
   intentarDescarte,
+  misionDelDescarte,
   nuevaPartida,
   obtener,
   puedeAcusar,
+  quedaMargen,
+  siguienteMision,
+  TOTAL_MISIONES,
+  VIDAS_INICIALES,
+  vidas,
 } from '../core/estado.ts';
 import { busUi } from '../core/eventos.ts';
 import type { Marca, Seleccion } from '../core/tipos.ts';
@@ -29,17 +39,17 @@ import { $, h } from './dom.ts';
 const ETIQUETA_MARCA: Record<Marca, string> = { ninguna: 'Marcar', sospecha: 'Sospecho', principal: 'Principal' };
 
 const BTN_PRIMARIO =
-  'min-h-12 w-full rounded-xl bg-dorado-500 px-5 font-sans text-base font-bold text-carbon-950 shadow-lg shadow-black/30 transition active:scale-[0.98] active:bg-dorado-600 disabled:cursor-not-allowed disabled:bg-carbon-700 disabled:text-crema/40';
+  'min-h-12 w-full rounded-xl bg-champan-500 px-5 font-sans text-base font-bold text-noche-950 shadow-lg shadow-fucsia-600/20 transition active:scale-[0.98] active:bg-champan-600 disabled:cursor-not-allowed disabled:bg-noche-700 disabled:text-crema/40 disabled:shadow-none';
 const BTN_SECUNDARIO =
-  'min-h-12 w-full rounded-xl border border-dorado-500/50 bg-burdeos-900/60 px-5 font-sans text-base font-semibold text-dorado-400 transition active:scale-[0.98]';
-const BTN_FANTASMA =
-  'min-h-11 rounded-lg px-3 font-sans text-sm font-semibold text-dorado-400 underline-offset-4 hover:underline';
+  'min-h-12 w-full rounded-xl border border-fucsia-600/60 bg-fucsia-900/50 px-5 font-sans text-base font-semibold text-crema transition active:scale-[0.98]';
+const BTN_FANTASMA = 'min-h-11 rounded-lg px-3 font-sans text-sm font-semibold text-cian-400 underline-offset-4 hover:underline';
+const ETIQUETA = 'font-sans text-[11px] font-bold tracking-[0.2em] text-cian-400 uppercase';
 
 // ---------------------------------------------------------------- Modal
 
 let cerrarActual: (() => void) | null = null;
 
-function abrirModal(contenido: HTMLElement, etiqueta: string): () => void {
+export function abrirModal(contenido: HTMLElement, etiqueta: string): () => void {
   cerrarActual?.();
   const raiz = $('#modal-raiz');
   const panel = h(
@@ -49,9 +59,9 @@ function abrirModal(contenido: HTMLElement, etiqueta: string): () => void {
       'aria-modal': 'true',
       'aria-label': etiqueta,
       class:
-        'modal-panel relative max-h-[88svh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-3xl border border-dorado-500/25 bg-carbon-900 px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-6 shadow-2xl sm:rounded-3xl',
+        'modal-panel relative max-h-[88svh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-3xl border border-fucsia-600/40 bg-noche-900 px-5 pt-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-2xl shadow-fucsia-600/20 sm:rounded-3xl',
     },
-    h('div', { class: 'mx-auto mb-4 h-1 w-12 rounded-full bg-dorado-500/40 sm:hidden', 'aria-hidden': 'true' }),
+    h('div', { class: 'mx-auto mb-4 h-1 w-12 rounded-full bg-fucsia-600/50 sm:hidden', 'aria-hidden': 'true' }),
     contenido,
   );
   const fondo = h(
@@ -67,13 +77,17 @@ function abrirModal(contenido: HTMLElement, etiqueta: string): () => void {
   };
   document.addEventListener('keydown', alTeclado);
   raiz.append(fondo);
+  busUi.emit('modal', { abierto: true });
   requestAnimationFrame(() => fondo.classList.add('abierto'));
   panel.querySelector<HTMLElement>('button, [href], textarea')?.focus({ preventScroll: true });
 
   function cerrar() {
     document.removeEventListener('keydown', alTeclado);
     fondo.remove();
-    if (cerrarActual === cerrar) cerrarActual = null;
+    if (cerrarActual === cerrar) {
+      cerrarActual = null;
+      busUi.emit('modal', { abierto: false });
+    }
   }
   cerrarActual = cerrar;
   return cerrar;
@@ -91,38 +105,114 @@ function encabezado(antetitulo: string, titulo: string): HTMLElement {
   return h(
     'header',
     { class: 'mb-4' },
-    h('p', { class: 'font-sans text-[11px] font-bold uppercase tracking-[0.25em] text-dorado-500' }, antetitulo),
-    h('h2', { class: 'mt-1 font-display text-2xl leading-tight text-crema' }, titulo),
+    h('p', { class: ETIQUETA }, antetitulo),
+    h('h2', { class: 'mt-1 font-display text-2xl leading-tight font-bold text-crema' }, titulo),
   );
+}
+
+function nombreCon(cat: Categoria, id: string): string {
+  const e = porId(id);
+  if (cat === 'arma') return (e as Arma).conArticulo;
+  if (cat === 'lugar') return (e as Lugar).conArticulo;
+  return e.nombre;
+}
+
+// ---------------------------------------------------------------- Formulario (respuestas escritas)
+
+export interface CampoFormulario {
+  id: string;
+  etiqueta: string;
+  tipo: 'numero' | 'texto';
+  placeholder?: string;
+}
+
+/**
+ * Panel con campos de texto para responder un puzle. `validar` devuelve null si la respuesta es
+ * correcta (el panel se cierra y se llama a `alAcertar`) o un mensaje de error para mostrar.
+ */
+export function abrirFormulario(opciones: {
+  antetitulo: string;
+  titulo: string;
+  descripcion?: string;
+  campos: CampoFormulario[];
+  textoBoton: string;
+  textoCancelar?: string;
+  validar: (valores: Record<string, string>) => string | null;
+  alAcertar: () => void;
+}): void {
+  const error = h('p', { class: 'mt-3 min-h-5 font-sans text-sm text-fucsia-600', role: 'alert', 'aria-live': 'assertive' });
+  const entradas = new Map<string, HTMLInputElement>();
+  const campos = opciones.campos.map((c) => {
+    const input = h('input', {
+      id: `campo-${c.id}`,
+      type: c.tipo === 'numero' ? 'number' : 'text',
+      inputmode: c.tipo === 'numero' ? 'numeric' : 'text',
+      autocomplete: 'off',
+      autocapitalize: c.tipo === 'texto' ? 'characters' : 'off',
+      spellcheck: 'false',
+      placeholder: c.placeholder,
+      class:
+        'mt-1 min-h-12 w-full rounded-xl border border-noche-600 bg-noche-950 px-3 font-sans text-base text-crema placeholder:text-crema/30 focus:border-cian-500 focus:outline-none',
+    }) as HTMLInputElement;
+    entradas.set(c.id, input);
+    return h('label', { class: 'mt-4 block', for: `campo-${c.id}` }, h('span', { class: ETIQUETA }, c.etiqueta), input);
+  });
+  const enviar = h('button', { type: 'submit', class: `${BTN_PRIMARIO} mt-5` }, opciones.textoBoton);
+  let cerrar = () => {};
+  const formulario = h(
+    'form',
+    {
+      novalidate: true,
+      onsubmit: (e: Event) => {
+        e.preventDefault();
+        const valores = Object.fromEntries([...entradas].map(([k, v]) => [k, v.value]));
+        const mensaje = opciones.validar(valores);
+        if (mensaje) {
+          error.textContent = mensaje;
+          return;
+        }
+        cerrar();
+        opciones.alAcertar();
+      },
+    },
+    encabezado(opciones.antetitulo, opciones.titulo),
+    opciones.descripcion ? h('p', { class: 'font-sans text-sm leading-relaxed text-crema/70' }, opciones.descripcion) : null,
+    campos,
+    error,
+    enviar,
+    h('button', { type: 'button', class: `${BTN_SECUNDARIO} mt-3`, onclick: () => cerrar() }, opciones.textoCancelar ?? 'Cancelar'),
+  );
+  cerrar = abrirModal(formulario, opciones.titulo);
 }
 
 // ---------------------------------------------------------------- Pista
 
-function mostrarPista(i: number): void {
+function mostrarPista(i: number, recienResuelta = false): void {
   const p = obtener();
   const m = p.misiones[i];
   if (!m.pista) return;
   const pista = m.pista;
   const pendiente = m.estado === 'descarte';
+  const testimonio = esTestimonio(i);
   let cerrar = () => {};
 
   const cuerpo = h(
     'div',
     {},
-    encabezado(`Pista ${MISIONES[i].numeral} de V`, pista.titulo),
+    encabezado(`Misión ${MISIONES[i].numeral} de ${TOTAL_MISIONES} · ${MISIONES[i].referencia}`, pista.titulo),
     h(
       'div',
-      { class: 'space-y-3 rounded-2xl border border-dorado-500/20 bg-carbon-800/70 p-4 font-display text-[17px] leading-relaxed text-crema/95' },
-      pista.parrafos.map((t, k) => h('p', { class: k === 0 ? 'italic text-crema/75' : '' }, t)),
+      { class: 'space-y-3 rounded-2xl border border-cian-500/25 bg-noche-800/80 p-4 font-display text-[17px] leading-relaxed text-crema/95' },
+      pista.parrafos.map((t, k) => h('p', { class: k === 0 ? 'text-crema/70 italic' : '' }, t)),
       pista.condicionales?.length
         ? h(
             'ol',
             { class: 'mt-2 space-y-3' },
-            pista.condicionales.map((t, k) =>
+            pista.condicionales.map((t) =>
               h(
                 'li',
-                { class: 'flex gap-3 rounded-xl bg-burdeos-950/60 p-3' },
-                h('span', { class: 'font-sans text-sm font-bold text-dorado-500' }, `${k + 1}`),
+                { class: 'flex gap-3 rounded-xl bg-fucsia-950/70 p-3' },
+                h('span', { class: 'font-sans text-sm font-bold text-fucsia-600' }, '◆'),
                 h('span', {}, t),
               ),
             ),
@@ -133,29 +223,40 @@ function mostrarPista(i: number): void {
       ? h(
           'p',
           { class: 'mt-4 font-sans text-sm text-crema/70' },
-          'Ahora descarta exactamente un sospechoso, un arma y un lugar que esta pista deje fuera de sospecha.',
+          'Ahora descarta un elemento (sospechoso, arma o lugar) que las pistas dejen fuera de sospecha.',
         )
       : null,
-    !pendiente && i === MISIONES.length - 1 && !p.resuelta
+    testimonio && !p.resuelta
       ? h(
           'p',
           { class: 'mt-4 font-sans text-sm text-crema/70' },
-          'Cruza estas afirmaciones con los dos candidatos que te quedan en cada categoría: solo una combinación las cumple todas.',
+          'Junta las afirmaciones de los tres testimonios y crúzalas con los dos candidatos que te quedan en cada categoría: solo una combinación las cumple todas.',
         )
       : null,
     h(
       'div',
       { class: 'mt-5 grid gap-3' },
-      pendiente
-        ? h('button', { class: BTN_PRIMARIO, onclick: () => mostrarDescarte(i) }, 'Pasar al descarte')
-        : null,
+      pendiente ? h('button', { class: BTN_PRIMARIO, onclick: () => mostrarDescarte(i) }, 'Pasar al descarte') : null,
       !pendiente && puedeAcusar()
         ? h('button', { class: BTN_PRIMARIO, onclick: () => mostrarAcusacion() }, 'Resolver el caso: Acusar')
         : null,
-      h('button', { class: BTN_SECUNDARIO, onclick: () => cerrar() }, pendiente ? 'Descartar más tarde' : 'Volver a la mansión'),
+      !pendiente && recienResuelta && siguienteMision(i) >= 0
+        ? h(
+            'button',
+            { class: BTN_PRIMARIO, onclick: () => irALaSiguiente(i, cerrar) },
+            `Siguiente: ${MISIONES[siguienteMision(i)].numeral} · ${MISIONES[siguienteMision(i)].titulo}`,
+          )
+        : null,
+      h('button', { class: BTN_SECUNDARIO, onclick: () => cerrar() }, pendiente ? 'Descartar más tarde' : 'Volver a la terraza'),
     ),
   );
   cerrar = abrirModal(cuerpo, pista.titulo);
+}
+
+function irALaSiguiente(desde: number, cerrar: () => void): void {
+  const sig = siguienteMision(desde);
+  cerrar();
+  if (sig >= 0) busUi.emit('ir-a-mision', { mision: sig });
 }
 
 // ---------------------------------------------------------------- Selector de chips
@@ -164,7 +265,6 @@ interface Selector {
   el: HTMLElement;
   valor(): string | null;
   bloquear(id: string): void;
-  limpiar(): void;
 }
 
 function selector(cat: Categoria, ids: string[], alCambiar: () => void, nombreGrupo: string): Selector {
@@ -181,10 +281,10 @@ function selector(cat: Categoria, ids: string[], alCambiar: () => void, nombreGr
       b.className = [
         'min-h-12 rounded-xl border px-3 py-2 text-left font-sans text-sm font-semibold transition active:scale-[0.98]',
         bloq
-          ? 'border-burdeos-600 bg-burdeos-950/70 text-crema/40 line-through'
+          ? 'border-fucsia-600 bg-fucsia-950/70 text-crema/40 line-through'
           : activo
-            ? 'border-dorado-400 bg-dorado-500 text-carbon-950'
-            : 'border-carbon-600 bg-carbon-800 text-crema',
+            ? 'border-champan-400 bg-champan-500 text-noche-950'
+            : 'border-noche-600 bg-noche-800 text-crema',
       ].join(' ');
     }
   };
@@ -213,24 +313,11 @@ function selector(cat: Categoria, ids: string[], alCambiar: () => void, nombreGr
   pintar();
 
   return {
-    el: h(
-      'fieldset',
-      { class: 'mt-4' },
-      h(
-        'legend',
-        { class: 'mb-2 font-sans text-[11px] font-bold uppercase tracking-[0.2em] text-dorado-500' },
-        NOMBRE_CATEGORIA[cat].plural,
-      ),
-      lista,
-    ),
+    el: h('fieldset', { class: 'mt-4' }, h('legend', { class: `${ETIQUETA} mb-2` }, NOMBRE_CATEGORIA[cat].plural), lista),
     valor: () => elegido,
     bloquear(id) {
       bloqueados.add(id);
       if (elegido === id) elegido = null;
-      pintar();
-    },
-    limpiar() {
-      elegido = null;
       pintar();
     },
   };
@@ -239,55 +326,130 @@ function selector(cat: Categoria, ids: string[], alCambiar: () => void, nombreGr
 // ---------------------------------------------------------------- Descarte
 
 function mostrarDescarte(i: number): void {
+  const p = obtener();
   const mensaje = h('div', { class: 'mt-4 space-y-2', 'aria-live': 'polite' });
   const confirmar = h('button', { class: BTN_PRIMARIO, disabled: true }, 'Confirmar descarte') as HTMLButtonElement;
-  const actualizar = () => {
-    confirmar.disabled = !CATEGORIAS.every((c) => selectores[c].valor());
+  let elegido: string | null = null;
+  const bloqueados = new Set<string>();
+  const botones = new Map<string, HTMLButtonElement>();
+
+  const pintar = () => {
+    for (const [id, b] of botones) {
+      const cat = porId(id).categoria;
+      const descartado = !candidatos(cat).includes(id);
+      const lleno = !quedaMargen(cat);
+      const bloq = descartado || lleno || bloqueados.has(id);
+      const activo = elegido === id;
+      b.disabled = bloq;
+      b.setAttribute('aria-checked', String(activo));
+      b.className = [
+        'min-h-11 rounded-xl border px-3 py-2 text-left font-sans text-[13px] leading-snug font-semibold transition active:scale-[0.98]',
+        descartado
+          ? 'border-noche-700 bg-noche-900 text-crema/30 line-through'
+          : bloqueados.has(id)
+            ? 'border-fucsia-600 bg-fucsia-950/70 text-crema/40 line-through'
+            : lleno
+              ? 'border-noche-700 bg-noche-900 text-crema/40'
+              : activo
+                ? 'border-champan-400 bg-champan-500 text-noche-950'
+                : 'border-noche-600 bg-noche-800 text-crema',
+      ].join(' ');
+    }
+    confirmar.disabled = !elegido;
   };
-  const selectores = Object.fromEntries(
-    CATEGORIAS.map((c) => [c, selector(c, candidatos(c), actualizar, `Descartar ${NOMBRE_CATEGORIA[c].singular}`)]),
-  ) as Record<Categoria, Selector>;
+
+  const grupos = CATEGORIAS.map((cat) => {
+    const lleno = !quedaMargen(cat);
+    return h(
+      'fieldset',
+      { class: 'mt-4' },
+      h(
+        'legend',
+        { class: `${ETIQUETA} mb-2 flex w-full items-baseline justify-between gap-2` },
+        NOMBRE_CATEGORIA[cat].plural,
+        h(
+          'span',
+          { class: 'font-normal tracking-normal text-crema/50 normal-case' },
+          lleno ? 'Ya solo quedan 2: no se puede descartar más' : `${candidatos(cat).length} en juego`,
+        ),
+      ),
+      h(
+        'div',
+        { class: 'grid grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': NOMBRE_CATEGORIA[cat].plural },
+        ELEMENTOS[cat].map((e) => {
+          const b = h(
+            'button',
+            {
+              type: 'button',
+              role: 'radio',
+              onclick: () => {
+                elegido = elegido === e.id ? null : e.id;
+                mensaje.replaceChildren();
+                pintar();
+              },
+            },
+            e.nombre,
+          ) as HTMLButtonElement;
+          botones.set(e.id, b);
+          return b;
+        }),
+      ),
+    );
+  });
+  pintar();
 
   let cerrar = () => {};
   confirmar.addEventListener('click', () => {
-    const sel = Object.fromEntries(CATEGORIAS.map((c) => [c, selectores[c].valor()])) as Partial<Seleccion>;
-    const r = intentarDescarte(i, sel);
+    const id = elegido;
+    const r = intentarDescarte(i, id);
     mensaje.replaceChildren();
     if (r.ok) {
       cerrar();
-      const siguiente = MISIONES[i + 1];
-      aviso(siguiente ? `Descarte anotado. Desbloqueada la misión ${siguiente.numeral}.` : 'Descarte anotado.');
+      const sig = siguienteMision(i);
+      if (sig >= 0) {
+        aviso(`Descarte anotado. Siguiente: misión ${MISIONES[sig].numeral}, ${MISIONES[sig].titulo}.`);
+        busUi.emit('ir-a-mision', { mision: sig });
+      } else {
+        aviso(puedeAcusar() ? 'Descarte anotado. ¡Ya puedes resolver el caso!' : 'Descarte anotado.');
+      }
       return;
     }
-    if (r.motivo === 'contradice') {
-      for (const cat of r.conflictos) {
-        const id = sel[cat]!;
-        selectores[cat].bloquear(id);
-        mensaje.append(
-          h(
-            'p',
-            { class: 'rounded-xl border border-burdeos-600 bg-burdeos-950/80 p-3 font-sans text-sm text-crema', role: 'alert' },
-            h('strong', { class: 'text-[#f07a8c]' }, 'Las evidencias lo contradicen. '),
-            `Descartar ${porId(id).nombre} contradice las evidencias del caso Puyana. Elige ${NOMBRE_CATEGORIA[cat].otro}.`,
-          ),
-        );
-      }
-      actualizar();
+    if (r.motivo === 'contradice' && id) {
+      bloqueados.add(id);
+      elegido = null;
+      pintar();
+      mensaje.append(
+        h(
+          'p',
+          { class: 'rounded-xl border border-fucsia-600 bg-fucsia-950/80 p-3 font-sans text-sm text-crema', role: 'alert' },
+          h('strong', { class: 'text-fucsia-600' }, 'Las evidencias lo contradicen. '),
+          `Descartar ${nombreCon(r.categoria, id)} contradice las evidencias del caso Puyana. Elige otro elemento.`,
+        ),
+      );
+    } else if (r.motivo === 'limite') {
+      mensaje.append(h('p', { class: 'font-sans text-sm text-fucsia-600' }, 'En esa categoría ya solo quedan 2 candidatos. Elige de otra.'));
     } else {
-      mensaje.append(h('p', { class: 'font-sans text-sm text-[#f07a8c]' }, 'Elige exactamente un elemento de cada categoría.'));
+      mensaje.append(h('p', { class: 'font-sans text-sm text-fucsia-600' }, 'Elige exactamente un elemento.'));
     }
   });
 
   const cuerpo = h(
     'div',
     {},
-    encabezado(`Misión ${MISIONES[i].numeral} · Fase de descarte`, 'Descarta 1 de cada categoría'),
+    encabezado(`Misión ${MISIONES[i].numeral} · Fase de descarte`, 'Descarta 1 elemento'),
     h(
       'p',
       { class: 'font-sans text-sm leading-relaxed text-crema/70' },
-      'Elige un sospechoso, un arma y un lugar que todavía estén en juego. Si eliges algo que las evidencias señalan, el caso te avisará.',
+      `Elige un sospechoso, un arma o un lugar que siga en juego. Si eliges algo que las evidencias señalan, el caso te avisará. Al final deben quedar 2 candidatos en cada categoría.`,
     ),
-    CATEGORIAS.map((c) => selectores[c].el),
+    p.misiones[i].pista?.senalado
+      ? h(
+          'p',
+          { class: 'mt-2 font-sans text-xs text-crema/50' },
+          'Consejo: relee la pista; señala a alguien o algo fuera de sospecha.',
+        )
+      : null,
+    grupos,
     mensaje,
     h(
       'div',
@@ -325,7 +487,7 @@ function mostrarAcusacion(): void {
     else mostrarDerrota(sel, r.fallos);
   });
 
-  const condicionales = obtener().misiones[MISIONES.length - 1].pista?.condicionales ?? [];
+  const condicionales = afirmacionesObtenidas();
   const cuerpo = h(
     'div',
     {},
@@ -338,8 +500,8 @@ function mostrarAcusacion(): void {
     condicionales.length
       ? h(
           'details',
-          { class: 'mt-3 rounded-xl border border-dorado-500/20 bg-carbon-800/60 p-3 font-sans text-sm text-crema/80' },
-          h('summary', { class: 'cursor-pointer font-semibold text-dorado-400' }, 'Declaración del careo final'),
+          { class: 'mt-3 rounded-xl border border-cian-500/30 bg-noche-800/70 p-3 font-sans text-sm text-crema/85', open: true },
+          h('summary', { class: 'cursor-pointer font-semibold text-cian-400' }, 'Lo que dicen los testimonios'),
           h('ol', { class: 'mt-2 list-decimal space-y-1 pl-5' }, condicionales.map((t) => h('li', {}, t))),
         )
       : null,
@@ -351,19 +513,20 @@ function mostrarAcusacion(): void {
 
 function mostrarVictoria(): void {
   const p = obtener();
-  const s = porId(p.solucion.sospechoso) as Sospechoso;
-  const a = porId(p.solucion.arma);
-  const l = porId(p.solucion.lugar);
+  const s = porId(p.solucion.sospechoso);
+  const a = porId(p.solucion.arma) as Arma;
+  const l = porId(p.solucion.lugar) as Lugar;
 
   const resumen = p.misiones.map((m, i) => {
     const info = MISIONES[i];
-    const texto = m.descarte
-      ? `Descartaste a ${porId(m.descarte.sospechoso).nombre}, ${porId(m.descarte.arma).nombre} y ${porId(m.descarte.lugar).nombre}.`
-      : 'Sus afirmaciones condicionales solo eran compatibles con una combinación.';
+    const texto =
+      m.descarte
+        ? `Te permitió descartar ${nombreCon(porId(m.descarte).categoria, m.descarte)}.`
+        : `Aportó ${m.pista?.condicionales?.length ?? 0} ${m.pista?.condicionales?.length === 1 ? 'afirmación' : 'afirmaciones'} que, junto a las demás, solo dejaban una combinación.`;
     return h(
       'li',
-      { class: 'rounded-xl bg-carbon-800/70 p-3' },
-      h('p', { class: 'font-sans text-[11px] font-bold uppercase tracking-[0.18em] text-dorado-500' }, `Misión ${info.numeral} · ${info.titulo}`),
+      { class: 'rounded-xl bg-noche-800/70 p-3' },
+      h('p', { class: 'font-sans text-[11px] font-bold tracking-[0.15em] text-cian-400 uppercase' }, `${info.numeral} · ${info.titulo}`),
       h('p', { class: 'mt-1 font-sans text-sm text-crema/80' }, texto),
     );
   });
@@ -371,27 +534,27 @@ function mostrarVictoria(): void {
   const cuerpo = h(
     'div',
     {},
-    encabezado('Caso cerrado', `${s.nombre}, con ${'conArticulo' in a ? a.conArticulo : a.nombre}, ${'enLugar' in l ? l.enLugar : l.nombre}.`),
+    encabezado('Caso cerrado', `${s.nombre}, con ${a.conArticulo}, ${l.enLugar}.`),
     h(
       'div',
       { class: 'space-y-3 font-display text-[17px] leading-relaxed text-crema/95' },
-      h('p', {}, s.comoFue),
-      h('p', {}, a.comoFue),
-      h('p', {}, l.comoFue),
+      ...(p.modo === 'predeterminado'
+        ? HISTORIA_PREDETERMINADA.resolucion.map((t) => h('p', {}, t))
+        : [h('p', {}, s.comoFue), h('p', {}, a.comoFue), h('p', {}, l.comoFue)]),
       h(
         'p',
-        { class: 'italic text-crema/70' },
+        { class: 'text-crema/70 italic' },
         p.acusaciones === 1
-          ? 'Lo resolviste a la primera. Al amanecer, la policía solo tuvo que firmar tu informe.'
-          : `Necesitaste ${p.acusaciones} acusaciones, pero la verdad salió a la luz antes del amanecer.`,
+          ? 'Lo resolviste a la primera. Cuando llegó la policía, solo tuvo que firmar tu informe.'
+          : `Necesitaste ${p.acusaciones} acusaciones, pero la verdad salió a la luz antes de que llegara la policía.`,
       ),
     ),
-    h('h3', { class: 'mt-6 font-sans text-xs font-bold uppercase tracking-[0.2em] text-dorado-500' }, 'Cómo encajaron las pistas'),
+    h('h3', { class: `${ETIQUETA} mt-6` }, 'Cómo encajaron las pistas'),
     h('ol', { class: 'mt-3 space-y-2' }, resumen),
     h(
       'div',
       { class: 'mt-6 grid gap-3' },
-      h('button', { class: BTN_PRIMARIO, onclick: () => empezarDeNuevo() }, 'Nueva partida con otro misterio'),
+      h('button', { class: BTN_PRIMARIO, onclick: () => empezarDeNuevo() }, p.modo === 'predeterminado' ? 'Volver a jugar' : 'Nueva partida con otro misterio'),
       h('a', { class: `${BTN_SECUNDARIO} grid place-items-center`, href: ruta('/') }, 'Volver al inicio'),
     ),
   );
@@ -399,30 +562,26 @@ function mostrarVictoria(): void {
 }
 
 function mostrarDerrota(sel: Seleccion, fallos: Categoria[]): void {
-  const frases: Record<Categoria, (n: string) => string> = {
-    sospechoso: (n) => `El sospechoso no coincide: ${n} no es quien mató a Puyana.`,
-    arma: (n) => `El arma no coincide: ${n} no fue el arma del crimen.`,
-    lugar: (n) => `El lugar no coincide: el crimen no ocurrió en ${n}.`,
+  const frases: Record<Categoria, (id: string) => string> = {
+    sospechoso: (id) => `El sospechoso no coincide: ${porId(id).nombre} no es quien mató a Puyana.`,
+    arma: (id) => `El arma no coincide: ${(porId(id) as Arma).conArticulo} no fue el arma del crimen.`,
+    lugar: (id) => `El lugar no coincide: el crimen no ocurrió ${(porId(id) as Lugar).enLugar}.`,
   };
   const cuerpo = h(
     'div',
     {},
-    encabezado('La acusación no se sostiene', 'El asesino sigue libre'),
+    encabezado('La acusación no se sostiene', 'El asesino sigue de fiesta'),
     h(
       'ul',
       { class: 'space-y-2' },
       fallos.map((c) =>
-        h(
-          'li',
-          { class: 'rounded-xl border border-burdeos-600 bg-burdeos-950/70 p-3 font-sans text-sm text-crema' },
-          frases[c](porId(sel[c]).nombre),
-        ),
+        h('li', { class: 'rounded-xl border border-fucsia-600 bg-fucsia-950/70 p-3 font-sans text-sm text-crema' }, frases[c](sel[c])),
       ),
     ),
     h(
       'p',
       { class: 'mt-4 font-sans text-sm text-crema/70' },
-      'Vuelve a leer la declaración del careo final: cada condición descarta combinaciones.',
+      'Vuelve a leer los testimonios: cada afirmación descarta combinaciones.',
     ),
     h(
       'div',
@@ -437,8 +596,8 @@ function mostrarDerrota(sel: Seleccion, fallos: Categoria[]): void {
 function empezarDeNuevo(): void {
   cerrarActual?.();
   cerrarCuaderno();
-  nuevaPartida();
-  aviso('Nuevo misterio en Villa Puyana. Suerte, detective.');
+  const p = nuevaPartida();
+  aviso(p.modo === 'predeterminado' ? 'La historia vuelve a empezar. Suerte, detective.' : 'Nuevo misterio en la terraza. Suerte, detective.');
 }
 
 // ---------------------------------------------------------------- Cuaderno
@@ -448,7 +607,6 @@ let confirmandoReinicio = false;
 function pintarCuaderno(): void {
   const p = obtener();
   const cuerpo = $('#cuaderno-cuerpo');
-  const misionDeDescarte = (cat: Categoria, id: string) => p.descartados[cat].indexOf(id) + 1;
 
   const secciones = CATEGORIAS.map((cat) =>
     h(
@@ -456,28 +614,26 @@ function pintarCuaderno(): void {
       { class: 'mb-6' },
       h(
         'h3',
-        { class: 'mb-2 flex items-baseline justify-between font-sans text-[11px] font-bold uppercase tracking-[0.2em] text-dorado-500' },
+        { class: `${ETIQUETA} mb-2 flex items-baseline justify-between` },
         NOMBRE_CATEGORIA[cat].plural,
-        h('span', { class: 'font-normal normal-case tracking-normal text-crema/50' }, `${candidatos(cat).length} en juego`),
+        h('span', { class: 'font-normal tracking-normal text-crema/50 normal-case' }, `${candidatos(cat).length} en juego`),
       ),
       h(
         'ul',
-        { class: 'divide-y divide-carbon-700 overflow-hidden rounded-xl border border-carbon-700 bg-carbon-800/60' },
+        { class: 'divide-y divide-noche-700 overflow-hidden rounded-xl border border-noche-700 bg-noche-800/60' },
         ELEMENTOS[cat].map((e) => {
-          const n = misionDeDescarte(cat, e.id);
+          const m = misionDelDescarte(e.id);
           const marca = p.marcas[e.id] ?? 'ninguna';
           return h(
             'li',
             { class: 'flex min-h-12 items-center gap-3 px-3 py-2' },
             h(
               'span',
-              {
-                class: `flex-1 font-display text-[16px] ${n ? 'text-crema/35 line-through decoration-burdeos-600 decoration-2' : 'text-crema'}`,
-              },
+              { class: `flex-1 font-display text-[16px] ${m >= 0 ? 'text-crema/35 line-through decoration-fucsia-600 decoration-2' : 'text-crema'}` },
               e.nombre,
             ),
-            n
-              ? h('span', { class: 'font-sans text-[11px] font-semibold text-crema/45' }, `Descartado · M${MISIONES[n - 1].numeral}`)
+            m >= 0
+              ? h('span', { class: 'font-sans text-[11px] font-semibold text-crema/45' }, `Descartado · M${MISIONES[m].numeral}`)
               : h(
                   'button',
                   {
@@ -485,10 +641,10 @@ function pintarCuaderno(): void {
                     class: [
                       'min-h-9 rounded-full border px-3 font-sans text-xs font-bold transition',
                       marca === 'principal'
-                        ? 'border-burdeos-600 bg-burdeos-700 text-crema'
+                        ? 'border-fucsia-600 bg-fucsia-700 text-crema'
                         : marca === 'sospecha'
-                          ? 'border-dorado-500 bg-dorado-500/15 text-dorado-400'
-                          : 'border-carbon-600 text-crema/50',
+                          ? 'border-champan-500 bg-champan-500/15 text-champan-400'
+                          : 'border-noche-600 text-crema/50',
                     ].join(' '),
                     'aria-label': `Marca para ${e.nombre}: ${ETIQUETA_MARCA[marca]}`,
                     onclick: () => alternarMarca(e.id),
@@ -512,21 +668,21 @@ function pintarCuaderno(): void {
           'button',
           {
             type: 'button',
-            class: 'flex min-h-12 w-full items-center justify-between rounded-xl bg-carbon-800/70 px-3 text-left font-sans text-sm text-crema',
+            class: 'flex min-h-12 w-full items-center justify-between gap-3 rounded-xl bg-noche-800/70 px-3 text-left font-sans text-sm text-crema',
             onclick: () => {
               cerrarCuaderno();
               mostrarPista(i);
             },
           },
           h('span', {}, `${MISIONES[i].numeral} · ${MISIONES[i].titulo}`),
-          h('span', { class: m.estado === 'descarte' ? 'text-[#f07a8c]' : 'text-dorado-400' }, m.estado === 'descarte' ? 'Descartar ›' : 'Leer ›'),
+          h('span', { class: m.estado === 'descarte' ? 'shrink-0 text-fucsia-600' : 'shrink-0 text-cian-400' }, m.estado === 'descarte' ? 'Descartar ›' : 'Leer ›'),
         ),
       ),
     );
 
   const notas = h('textarea', {
     class:
-      'mt-2 min-h-28 w-full rounded-xl border border-carbon-600 bg-carbon-950 p-3 font-sans text-sm text-crema placeholder:text-crema/30 focus:border-dorado-500 focus:outline-none',
+      'mt-2 min-h-28 w-full rounded-xl border border-noche-600 bg-noche-950 p-3 font-sans text-sm text-crema placeholder:text-crema/30 focus:border-cian-500 focus:outline-none',
     placeholder: 'Escribe aquí tus deducciones…',
     'aria-label': 'Notas libres',
   }) as HTMLTextAreaElement;
@@ -541,7 +697,7 @@ function pintarCuaderno(): void {
     'button',
     {
       type: 'button',
-      class: `${BTN_FANTASMA} mt-2 ${confirmandoReinicio ? 'text-[#f07a8c]' : ''}`,
+      class: `${BTN_FANTASMA} mt-2 ${confirmandoReinicio ? 'text-fucsia-600' : ''}`,
       onclick: () => {
         if (confirmandoReinicio) {
           confirmandoReinicio = false;
@@ -560,17 +716,12 @@ function pintarCuaderno(): void {
     h(
       'section',
       { class: 'mb-6' },
-      h('h3', { class: 'mb-2 font-sans text-[11px] font-bold uppercase tracking-[0.2em] text-dorado-500' }, 'Pistas obtenidas'),
+      h('h3', { class: `${ETIQUETA} mb-2` }, 'Pistas obtenidas'),
       pistas.length
         ? h('ul', { class: 'space-y-2' }, pistas)
-        : h('p', { class: 'font-sans text-sm italic text-crema/50' }, 'Aún no has resuelto ninguna misión.'),
+        : h('p', { class: 'font-sans text-sm text-crema/50 italic' }, 'Aún no has resuelto ninguna misión.'),
     ),
-    h(
-      'section',
-      { class: 'mb-4' },
-      h('h3', { class: 'font-sans text-[11px] font-bold uppercase tracking-[0.2em] text-dorado-500' }, 'Notas libres'),
-      notas,
-    ),
+    h('section', { class: 'mb-4' }, h('h3', { class: ETIQUETA }, 'Notas libres'), notas),
     reinicio,
   );
 }
@@ -606,15 +757,44 @@ function pintarBarra(): void {
   const p = obtener();
   const barra = $('#barra-acusar');
   const btn = $('#btn-acusar');
-  const pendientes = p.misiones.filter((m) => m.estado !== 'completada').length;
+  const hechas = p.misiones.filter((m) => m.estado === 'completada').length;
   const visible = p.resuelta || puedeAcusar();
   barra.classList.toggle('hidden', !visible);
   btn.textContent = p.resuelta ? 'Ver la resolución del caso' : 'Resolver el caso: Acusar';
-  $('#estado-caso').textContent = p.resuelta
-    ? 'Caso resuelto'
-    : pendientes === 0
-      ? 'Listo para acusar'
-      : `${MISIONES.length - pendientes}/5 misiones`;
+  const v = vidas();
+  const corazones = '♥'.repeat(v) + '♡'.repeat(Math.max(0, VIDAS_INICIALES - v));
+  $('#estado-caso').textContent = p.perdida
+    ? 'Partida perdida'
+    : p.resuelta
+      ? 'Caso resuelto'
+      : `${corazones} · ${hechas === TOTAL_MISIONES ? 'Listo para acusar' : `${hechas}/${TOTAL_MISIONES} misiones`}`;
+}
+
+// ---------------------------------------------------------------- Partida perdida
+
+let perdidaMostrada = -1;
+
+function mostrarPartidaPerdida(): void {
+  const p = obtener();
+  perdidaMostrada = p.semilla;
+  const hechas = p.misiones.filter((m) => m.estado === 'completada').length;
+  const cuerpo = h(
+    'div',
+    {},
+    encabezado('Sin vidas', 'Has perdido la partida'),
+    h(
+      'p',
+      { class: 'font-sans text-sm leading-relaxed text-crema/75' },
+      `Fallaste una respuesta más sin vidas. El asesino aprovecha el caos, se mezcla con los invitados y sale del hotel antes de que llegue la policía. Llegaste a completar ${hechas} de ${TOTAL_MISIONES} misiones.`,
+    ),
+    h(
+      'div',
+      { class: 'mt-5 grid gap-3' },
+      h('button', { class: BTN_PRIMARIO, onclick: () => empezarDeNuevo() }, p.modo === 'predeterminado' ? 'Volver a intentarlo' : 'Nueva partida'),
+      h('a', { class: `${BTN_SECUNDARIO} grid place-items-center`, href: ruta('/') }, 'Volver al inicio'),
+    ),
+  );
+  abrirModal(cuerpo, 'Partida perdida');
 }
 
 // ---------------------------------------------------------------- Arranque
@@ -628,12 +808,15 @@ export function iniciarOverlay(): void {
   });
   $('#btn-acusar').addEventListener('click', mostrarAcusacion);
 
-  eventos.on('cambio', () => {
+  eventos.on('cambio', (p) => {
     pintarBarra();
+    if (p.perdida && perdidaMostrada !== p.semilla) window.setTimeout(mostrarPartidaPerdida, 1300);
     if (cuadernoAbierto()) pintarCuaderno();
   });
-  eventos.on('pista', ({ mision }) => mostrarPista(mision));
+  eventos.on('pista', ({ mision }) => mostrarPista(mision, true));
   busUi.on('ver-pista', ({ mision }) => mostrarPista(mision));
+  busUi.on('partida-perdida', () => mostrarPartidaPerdida());
+  if (obtener().perdida) mostrarPartidaPerdida();
 
   pintarBarra();
 }

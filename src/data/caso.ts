@@ -1,4 +1,4 @@
-// Los 18 elementos del caso "¿Quién mató a Puyana?".
+// Los 18 elementos del caso "¿Quién mató a Puyana?" (pre boda de Juanky y Paula).
 // Este archivo alimenta tanto las páginas de presentación como la lógica del juego.
 
 export type Categoria = 'sospechoso' | 'arma' | 'lugar';
@@ -37,6 +37,7 @@ export interface ElementoBase {
 export interface Sospechoso extends ElementoBase {
   categoria: 'sospechoso';
   nombreCompleto: string;
+  voz: string;
   motivo: string;
   coartada: string;
   secreto: string;
@@ -61,428 +62,447 @@ export type Elemento = Sospechoso | Arma | Lugar;
 
 export const SOSPECHOSOS: Sospechoso[] = [
   {
-    id: 'condesa-elena',
+    id: 'machi',
     categoria: 'sospechoso',
-    nombre: 'Condesa Elena',
-    nombreCompleto: 'Elena Valdés-Orsini, condesa de Altamira',
-    monograma: 'E',
-    tono: '#8f1d2c',
-    lema: 'La nobleza también tiene deudas.',
+    nombre: 'Machi el mono',
+    nombreCompleto: 'Marcelino Mora Cortés',
+    monograma: 'MM',
+    tono: '#ff2e93',
+    lema: 'Que Dios te lo pague.',
+    voz: 'Altiva',
     ficha: [
-      { etiqueta: 'Edad', valor: '54 años' },
-      { etiqueta: 'Ocupación', valor: 'Aristócrata sin fortuna' },
-      { etiqueta: 'Vínculo', valor: 'Antigua prometida de Puyana' },
-      { etiqueta: 'Vista por última vez', valor: 'Galería de retratos, 23:10' },
+      { etiqueta: 'Edad', valor: '31 años' },
+      { etiqueta: 'Profesión', valor: 'Farmacéutico anti-abertzale' },
+      { etiqueta: 'Visto por última vez', valor: 'Barra, 3:28' },
+      { etiqueta: 'Tono de voz', valor: 'Altiva' },
     ],
     relacion:
-      'Hace treinta años estuvo a punto de casarse con Aurelio Puyana. Él no se lo perdonó nunca: durante décadas compró en secreto, pieza a pieza, las joyas que la familia de Elena tuvo que empeñar.',
-    motivo:
-      'Puyana guardaba los recibos de cada joya vendida. Había prometido mostrarlos esta noche, delante de todos, y con ellos la ruina del apellido Valdés-Orsini.',
-    coartada:
-      'Asegura que pasó la noche en la galería de retratos, frente al cuadro de su abuela que Puyana le arrebató en una subasta.',
-    secreto: 'Lleva un año firmando préstamos con un aval que no existe.',
+      'Fijo en todas las quedadas del grupo. Con Puyana la cosa llevaba tiempo tensa: por política… y por algo que Machi prefiere no contar.',
+    motivo: 'Puyana iba a votar a Pedro Sánchez.',
+    coartada: 'Dice que estaba pidiendo en la barra.',
+    secreto: 'Se besó con la novia de Puyana.',
     pistaInocente:
-      'dos criados vieron a la Condesa Elena inmóvil frente al retrato de su abuela durante todo el apagón; no se movió de la galería ni un instante',
+      'el camarero de la Barra tiene a Machi el mono en el ticket: pidió, pagó y volvió a pedir sin despegarse del mostrador durante todo el apagón',
     comoFue:
-      'La Condesa Elena no iba a consentir que Puyana subastara su apellido delante de todos. Cuando él le enseñó la carpeta con los recibos, comprendió que solo había una forma de que no viera la luz.',
+      'Machi el mono no podía consentir ese voto, y mucho menos que Puyana acabara contando lo del beso. Aprovechó la oscuridad para cobrarse la deuda. Que Dios se lo pague.',
   },
   {
-    id: 'dr-vance',
+    id: 'kike',
     categoria: 'sospechoso',
-    nombre: 'Dr. Vance',
-    nombreCompleto: 'Dr. Julian Vance, médico personal',
-    monograma: 'V',
-    tono: '#2f6f6a',
-    lema: 'Conoce cada latido de Puyana. También el último.',
+    nombre: 'Kike el verde',
+    nombreCompleto: 'Enrique Jorge Caballero Liñán',
+    monograma: 'KV',
+    tono: '#3ee07a',
+    lema: '¿Esta noche hacemos el camino de Shanti-ago?',
+    voz: 'Confiado y engañoso',
     ficha: [
-      { etiqueta: 'Edad', valor: '47 años' },
-      { etiqueta: 'Ocupación', valor: 'Médico de la familia' },
-      { etiqueta: 'Vínculo', valor: 'Doce años a su servicio' },
-      { etiqueta: 'Vista por última vez', valor: 'Ala este, 23:25' },
+      { etiqueta: 'Edad', valor: '32 años' },
+      { etiqueta: 'Profesión', valor: 'Diseñador industrial, dueño de Studio Manyar' },
+      { etiqueta: 'Visto por última vez', valor: 'Junto a la cristalera, al teléfono, 3:27' },
+      { etiqueta: 'Tono de voz', valor: 'Confiado y engañoso' },
     ],
     relacion:
-      'Atendía a Puyana dos veces por semana y era el único que entraba en su dormitorio sin llamar. Puyana decía que confiaba en él más que en su propia sangre.',
-    motivo:
-      'Puyana había descubierto que Vance le recetaba sedantes de más para mantenerlo dócil, y pensaba retirarlo de su testamento a la mañana siguiente.',
-    coartada: 'Dice que estuvo en el ala este curando a un camarero que se cortó con una botella.',
-    secreto: 'Su título de medicina se lo compró a una universidad que ya no existe.',
+      'Apenas un conocido lejano de Puyana. Aun así, desde lo de la Gran Vía, cada vez que se cruzan se nota la tensión.',
+    motivo: 'Puyana le llamó Pirri en plena Gran Vía.',
+    coartada: 'Estaba hablando con su pareja por teléfono.',
+    secreto: 'Puyana estaba la noche en que se encontró con Amara.',
     pistaInocente:
-      'el Dr. Vance estuvo cosiendo la mano de un camarero en el ala este; el vendaje lleva anotada la hora, y el camarero no le perdió de vista',
+      'el registro de llamadas demuestra que Kike el verde estuvo al teléfono con su pareja de 3:28 a 3:58, y varios invitados le oyeron repetir «que sí, que ya voy»',
     comoFue:
-      'El Dr. Vance sabía que al amanecer Puyana lo echaría de la casa y del testamento. Doce años de paciencia no podían terminar así, y nadie conocía mejor que él los puntos débiles de aquel cuerpo.',
+      'Kike el verde nunca olvidó aquel «Pirri» en plena Gran Vía. Cuando se fue la luz, colgó el teléfono un segundo y decidió que esa noche el camino lo hacía solo.',
   },
   {
-    id: 'inspector-moreau',
+    id: 'jack',
     categoria: 'sospechoso',
-    nombre: 'Inspector Moreau',
-    nombreCompleto: 'Lucien Moreau, inspector de la policía judicial',
+    nombre: 'Jack Poth',
+    nombreCompleto: 'Albert Jakob Liñán Maho',
+    monograma: 'JP',
+    tono: '#22d3ee',
+    lema: 'Esto se puede tirar al suelo porque es biodegradable.',
+    voz: 'Tranquilo y pausado',
+    ficha: [
+      { etiqueta: 'Edad', valor: '33 años' },
+      { etiqueta: 'Profesión', valor: 'Polivalente: domina el puente de diciembre y las vacaciones de verano' },
+      { etiqueta: 'Visto por última vez', valor: 'Hall de entrada, 3:26' },
+      { etiqueta: 'Tono de voz', valor: 'Tranquilo y pausado' },
+    ],
+    relacion:
+      'Conoce a Puyana de haber coincidido con él en las fiestas de Juanky. Desde entonces se disputan, para desgracia de los dos, el mismo callejón para aparcar.',
+    motivo: 'Puyana le robó el sitio para aparcar la furgoneta en su callejón favorito.',
+    coartada: 'Estaba discutiendo con unos hombres por el color de sus zapatos.',
+    secreto: 'Aparca en callejones oscuros para llevarse a chicas.',
+    pistaInocente:
+      'tres invitados confirman que Jack Poth pasó todo el apagón discutiendo con ellos sobre el color de sus zapatos, con toda la calma del mundo',
+    comoFue:
+      'Jack Poth llevaba meses dándole vueltas a lo del callejón. Sin prisa, como hace todo, decidió que esa plaza de aparcamiento volvía a ser suya.',
+  },
+  {
+    id: 'juaky',
+    categoria: 'sospechoso',
+    nombre: 'Juaky el cojo',
+    nombreCompleto: 'Joaquín Borrego Fernández',
+    monograma: 'JC',
+    tono: '#a855f7',
+    lema: 'Óleme el dedo.',
+    voz: 'Agresivo e hiriente',
+    ficha: [
+      { etiqueta: 'Edad', valor: '32 años' },
+      { etiqueta: 'Profesión', valor: 'Desarrollador web, profesor de informática y pajero de élite' },
+      { etiqueta: 'Visto por última vez', valor: 'Paseando por la terraza, 3:29' },
+      { etiqueta: 'Tono de voz', valor: 'Agresivo e hiriente' },
+    ],
+    relacion:
+      'En público, Juaky y Puyana se pasan la noche lanzándose pullas. Lo que pasa en privado es otra historia.',
+    motivo: 'Puyana le quitó a su hombre peludo (Juan Carlos).',
+    coartada: 'Estaba dándose un paseo.',
+    secreto:
+      'Puyana y él se llevan bien en secreto. Si se supiera, a Juaky lo tacharían de hipócrita.',
+    pistaInocente:
+      'las cámaras de la pasarela muestran a Juaky el cojo dando vueltas por la terraza de 3:30 a 4:00, cojeando, pero sin acercarse nunca a Puyana',
+    comoFue:
+      'Juaky el cojo no soportó que Puyana le quitara a Juan Carlos. Mientras todos cantaban a oscuras, dejó de disimular.',
+  },
+  {
+    id: 'plakito',
+    categoria: 'sospechoso',
+    nombre: 'Plakito',
+    nombreCompleto: 'Francisco Gago Medina, «M de Medina»',
     monograma: 'M',
-    tono: '#3b4f7a',
-    lema: 'El hombre de la ley, invitado a una casa sin ley.',
+    tono: '#f6b93b',
+    lema: 'Esta noche, la ruta de la ermita.',
+    voz: 'Fiestero y alegre',
     ficha: [
-      { etiqueta: 'Edad', valor: '61 años' },
-      { etiqueta: 'Ocupación', valor: 'Inspector en activo' },
-      { etiqueta: 'Vínculo', valor: 'Viejo amigo y deudor' },
-      { etiqueta: 'Visto por última vez', valor: 'Terraza norte, 23:38' },
+      { etiqueta: 'Edad', valor: '32 años' },
+      { etiqueta: 'Profesión', valor: 'Abogado laboralista y chatarrero de la noche' },
+      { etiqueta: 'Visto por última vez', valor: 'Pista de baile, 3:29' },
+      { etiqueta: 'Tono de voz', valor: 'Fiestero y alegre' },
     ],
-    relacion:
-      'Moreau cerró hace veinte años la investigación que dejó a Puyana limpio y millonario. Desde entonces cenaban juntos cada noviembre.',
+    relacion: 'Plakito y Puyana comparten amigo, Juan, pero solo uno de los dos puede ser el favorito.',
     motivo:
-      'Puyana conservaba la prueba de que aquel caso se archivó a cambio de dinero. Una sola llamada suya bastaba para acabar con la carrera de Moreau.',
-    coartada: 'Afirma que, en cuanto se fue la luz, salió a la terraza para avisar a la comisaría.',
-    secreto: 'La comisaría ya le había abierto un expediente interno.',
+      'Puyana es el único amigo de Juan que sigue considerándose amigo de Juan y no de Plakito.',
+    coartada: 'Estaba en la pista de baile haciendo el calzonas con su pareja.',
+    secreto: 'Puyana ha estado con él en fiestas hasta altas horas de la noche.',
     pistaInocente:
-      'el registro de la centralita demuestra que el Inspector Moreau estuvo al teléfono con la comisaría durante todo el apagón',
+      'media pista vio a Plakito haciendo el calzonas con su pareja durante todo «Pájaros de barro» y lo que sonó después',
     comoFue:
-      'El Inspector Moreau llevaba veinte años temiendo una llamada. Esta noche Puyana le dijo que la haría, y Moreau decidió que el caso más viejo de su carrera tenía que cerrarse de una vez.',
+      'Plakito estaba harto de ser el segundo amigo de Juan. Entre canción y canción, decidió quedarse con el puesto.',
   },
   {
-    id: 'lady-clara',
+    id: 'paula',
     categoria: 'sospechoso',
-    nombre: 'Lady Clara',
-    nombreCompleto: 'Lady Clara Ashford, ahijada de Puyana',
-    monograma: 'C',
-    tono: '#7a3b6b',
-    lema: 'Sonríe como una heredera. Piensa como una jugadora.',
+    nombre: 'Paularios',
+    nombreCompleto: 'Paula Pérez Tinajero',
+    monograma: 'PP',
+    tono: '#ff6b6b',
+    lema: 'Cómo odio que Juanky haga eso.',
+    voz: 'Clara y certera',
     ficha: [
-      { etiqueta: 'Edad', valor: '26 años' },
-      { etiqueta: 'Ocupación', valor: 'Pianista y heredera' },
-      { etiqueta: 'Vínculo', valor: 'Ahijada y heredera principal' },
-      { etiqueta: 'Vista por última vez', valor: 'Junto al piano, 23:35' },
+      { etiqueta: 'Edad', valor: '29 años' },
+      { etiqueta: 'Profesión', valor: 'Inspectora de Hacienda y futura esposa de Juanky' },
+      { etiqueta: 'Vista por última vez', valor: 'Guardarropa, 3:31' },
+      { etiqueta: 'Tono de voz', valor: 'Clara y certera' },
     ],
-    relacion:
-      'Puyana la crio como a una hija tras la muerte de sus padres. Le pagó los estudios en Londres y le dejó claro que algún día la mansión sería suya.',
-    motivo:
-      'Puyana se oponía a su boda secreta con un músico sin un céntimo y había amenazado con desheredarla si no la anulaba antes de fin de mes.',
-    coartada: 'Dice que se sentó al piano del salón para calmar a los invitados cuando se fue la luz.',
-    secreto: 'Ya está casada. Desde hace tres meses.',
+    relacion: 'La novia de la fiesta. Para ella, Puyana es la mayor amenaza para su boda.',
+    motivo: 'Puyana es el amor platónico de su futuro marido.',
+    coartada:
+      'Como su novio no le hacía caso y le ponía ojitos a Puyana, fue a por el abrigo para marcharse.',
+    secreto:
+      'Ha encontrado en el cajón de Juanky dos billetes de avión a la isla Mauricio, a nombre de Juanky y de Puyana, para las mismas fechas que su luna de miel.',
     pistaInocente:
-      'veinte invitados escucharon a Lady Clara tocar el piano sin una sola pausa mientras duró el apagón',
+      'la encargada del guardarropa atendió a Paularios a las 3:31 y la tuvo delante hasta que volvió la luz, buscando su abrigo entre doscientos',
     comoFue:
-      'Lady Clara entendió esta noche que Puyana hablaba en serio: o renunciaba a su marido o lo perdía todo. Eligió no perder nada.',
-  },
-  {
-    id: 'chef-mateo',
-    categoria: 'sospechoso',
-    nombre: 'Chef Mateo',
-    nombreCompleto: 'Mateo Ríos, jefe de cocina',
-    monograma: 'R',
-    tono: '#9a5a1f',
-    lema: 'Quince años cocinando para un hombre que nunca dijo gracias.',
-    ficha: [
-      { etiqueta: 'Edad', valor: '39 años' },
-      { etiqueta: 'Ocupación', valor: 'Jefe de cocina de la mansión' },
-      { etiqueta: 'Vínculo', valor: 'Empleado y socio frustrado' },
-      { etiqueta: 'Visto por última vez', valor: 'Pasillo de servicio, 23:20' },
-    ],
-    relacion:
-      'Puyana le prometió durante años financiar su propio restaurante. Esa misma tarde le anunció que se quedaba con sus recetas y que el restaurante lo abriría otro.',
-    motivo: 'Quince años de trabajo robados en una sola frase, y un contrato que le impedía cocinar para nadie más.',
-    coartada: 'Jura que no salió de los fogones: un soufflé no espera a nadie.',
-    secreto: 'Ha vendido en secreto recetas de la casa a un hotel de la capital.',
-    pistaInocente:
-      'el soufflé del Chef Mateo subió perfecto a las 23:45; nadie que abandone la cocina lo consigue, y dos pinches juran que no se apartó del horno',
-    comoFue:
-      'El Chef Mateo llevaba toda la tarde mordiéndose la rabia. Cuando Puyana bajó a burlarse de él una última vez, quince años de humillaciones se cobraron su precio.',
-  },
-  {
-    id: 'capitan-sterling',
-    categoria: 'sospechoso',
-    nombre: 'Capitán Sterling',
-    nombreCompleto: 'Arthur Sterling, capitán de la marina mercante',
-    monograma: 'S',
-    tono: '#1f5f8a',
-    lema: 'Ha sobrevivido a tres naufragios. A Puyana, quizá no.',
-    ficha: [
-      { etiqueta: 'Edad', valor: '58 años' },
-      { etiqueta: 'Ocupación', valor: 'Capitán retirado' },
-      { etiqueta: 'Vínculo', valor: 'Socio en la naviera Puyana' },
-      { etiqueta: 'Visto por última vez', valor: 'Embarcadero, 23:15' },
-    ],
-    relacion:
-      'Fueron socios en una naviera durante quince años. Juntos hundieron un viejo carguero asegurado por el triple de su valor, y juntos cobraron.',
-    motivo:
-      'Puyana, enfermo y con ganas de limpiar su conciencia, iba a confesar el fraude del carguero. Sterling iría a la cárcel; Puyana, probablemente, no.',
-    coartada: 'Dice que bajó al embarcadero a vigilar su yate por la tormenta y que allí siguió hasta medianoche.',
-    secreto: 'Hubo un marinero a bordo del carguero aquella noche.',
-    pistaInocente:
-      'el guarda del embarcadero ayudó al Capitán Sterling a amarrar su yate bajo la lluvia justo a la hora del crimen; volvieron los dos calados hasta los huesos',
-    comoFue:
-      'El Capitán Sterling no estaba dispuesto a hundirse con el barco de otro. Si Puyana quería confesar, tendría que hacerlo ante alguien que no fuera un juez.',
+      'Paularios encontró los billetes a Mauricio y lo vio clarísimo: en esa luna de miel sobraba alguien, y no era ella.',
   },
 ];
 
 export const ARMAS: Arma[] = [
   {
-    id: 'daga-antigua',
+    id: 'ginebra',
     categoria: 'arma',
-    nombre: 'Daga antigua',
-    conArticulo: 'la daga antigua',
+    nombre: 'Botella de ginebra premium',
+    conArticulo: 'la botella de ginebra premium',
     monograma: 'I',
-    tono: '#a3802f',
-    lema: 'Cuatro siglos esperando una última herida.',
+    tono: '#5ef2ff',
+    lema: 'Edición limitada. Final ilimitado.',
     ficha: [
-      { etiqueta: 'Origen', valor: 'Toledo, siglo XVI' },
-      { etiqueta: 'Longitud', valor: '31 cm' },
-      { etiqueta: 'Ubicación habitual', valor: 'Vitrina del Despacho' },
-      { etiqueta: 'Acceso', valor: 'Cualquiera con la llave de la vitrina' },
+      { etiqueta: 'Material', valor: 'Cristal grueso, edición limitada' },
+      { etiqueta: 'Peso', valor: '1,8 kg' },
+      { etiqueta: 'Procedencia', valor: 'Estantería iluminada de la Barra' },
+      { etiqueta: 'Estado', valor: 'Sin abrir' },
     ],
     descripcion:
-      'Hoja estrecha de acero con empuñadura de plata y un rubí agrietado en el pomo. Puyana la enseñaba a cada invitado como la joya de su colección.',
-    relacion: 'La compró en la misma subasta en la que humilló a media aristocracia. Decía que traía suerte a quien la tenía.',
-    forense: 'Una hoja así deja heridas estrechas y profundas, y apenas mancha: el agresor puede salir limpio.',
+      'Botella de cristal grueso de edición limitada, de 1,8 kg y sin abrir, sacada de la estantería iluminada de la Barra.',
+    relacion: 'Puyana la estuvo señalando toda la noche: «esa nos la bebemos en el brindis».',
+    forense: 'Su base maciza deja traumatismos limpios y restos de etiqueta húmeda.',
     pistaInocente:
-      'la daga antigua sigue en su vitrina: el polvo del terciopelo dibuja su silueta intacta y el cristal no se ha abierto en meses',
+      'la botella de ginebra premium que faltaba apareció precintada en la nevera del DJ, sin un solo arañazo ni una huella',
     comoFue:
-      'El arma fue la daga antigua, descolgada de su vitrina con guantes de gala: una sola puñalada, precisa, que apenas dejó rastro en la alfombra.',
+      'El arma fue la botella de ginebra premium: un golpe seco con la base maciza y la etiqueta húmeda como única testigo.',
   },
   {
-    id: 'candelabro-plata',
+    id: 'cordon',
     categoria: 'arma',
-    nombre: 'Candelabro de plata',
-    conArticulo: 'el candelabro de plata',
+    nombre: 'Cordón de terciopelo',
+    conArticulo: 'el cordón de terciopelo',
     monograma: 'II',
-    tono: '#9aa3ad',
-    lema: 'Iluminó la cena. Después, apagó una vida.',
+    tono: '#ff2e93',
+    lema: 'Ordena la cola. Y también la vida.',
     ficha: [
-      { etiqueta: 'Material', valor: 'Plata maciza de ley' },
-      { etiqueta: 'Peso', valor: '3,4 kg' },
-      { etiqueta: 'Ubicación habitual', valor: 'Mesa del comedor' },
-      { etiqueta: 'Acceso', valor: 'Todo el servicio y los invitados' },
+      { etiqueta: 'Color', valor: 'Burdeos, con mosquetones de latón' },
+      { etiqueta: 'Peso', valor: '1,2 kg' },
+      { etiqueta: 'Procedencia', valor: 'Postes del Hall de entrada' },
+      { etiqueta: 'Uso posible', valor: 'Estrangular o golpear' },
     ],
-    descripcion: 'Cinco brazos rematados en hojas de acanto. Es tan pesado que el servicio lo mueve entre dos personas.',
-    relacion: 'Regalo de bodas que Puyana nunca llegó a usar en su propia boda. Lo encendía solo en las grandes ocasiones.',
-    forense: 'Un golpe con un objeto de ese peso fractura el cráneo al instante. La cera derretida suele delatar el movimiento.',
+    descripcion:
+      'Grueso cordón burdeos con mosquetones de latón dorado en los extremos (1,2 kg), arrancado de los postes del Hall de entrada.',
+    relacion: 'Al llegar, Puyana se coló por debajo de ese cordón como si la fiesta fuera suya.',
+    forense: 'Sirve tanto para estrangular como para golpear; los mosquetones dejan marcas redondas.',
     pistaInocente:
-      'el candelabro de plata estuvo encendido en la mesa del comedor toda la velada; la cera derretida forma un charco continuo, sin un solo corte',
+      'el cordón de terciopelo que falta lo retiró el personal a las tres porque tenía un mosquetón roto, y estuvo toda la noche en el guardarropa con la etiqueta de reparación',
     comoFue:
-      'El arma fue el candelabro de plata: un único golpe en la penumbra del apagón, y la cera caliente borrando las huellas sobre el metal.',
+      'El arma fue el cordón de terciopelo: rápido, silencioso y devuelto a su poste antes de que volviera la luz.',
   },
   {
-    id: 'veneno-copa',
+    id: 'cable',
     categoria: 'arma',
-    nombre: 'Veneno en copa',
-    conArticulo: 'el veneno en copa',
+    nombre: 'Cable XLR de sonido',
+    conArticulo: 'el cable XLR de sonido',
     monograma: 'III',
-    tono: '#4f7a3b',
-    lema: 'Un brindis por los viejos tiempos. El último.',
+    tono: '#a855f7',
+    lema: 'Tres metros de sonido. Y de silencio.',
     ficha: [
-      { etiqueta: 'Sustancia', valor: 'Alcaloide sin olor' },
-      { etiqueta: 'Dosis letal', valor: 'Menos de diez gotas' },
-      { etiqueta: 'Recipiente', valor: 'Copa de coñac de Puyana' },
-      { etiqueta: 'Acceso', valor: 'Quien sirviera o rellenara su copa' },
+      { etiqueta: 'Longitud', valor: '3 m, reforzado' },
+      { etiqueta: 'Clavija', valor: 'Metálica y pesada' },
+      { etiqueta: 'Procedencia', valor: 'Cabina del DJ, Pista de baile' },
+      { etiqueta: 'Estado', valor: 'Desconectado de golpe' },
     ],
     descripcion:
-      'La copa tallada de la que Puyana bebía siempre, y de la que nadie más tenía permiso para beber. Esta noche se rellenó cuatro veces.',
-    relacion: 'Puyana presumía de no haber cambiado nunca de copa ni de coñac. Era su costumbre más previsible.',
-    forense: 'Un alcaloide así actúa en minutos y se confunde con un fallo cardíaco si nadie analiza los restos.',
+      'Cable grueso y reforzado de 3 metros con una clavija metálica pesada, desconectado de la cabina del DJ en la Pista de baile.',
+    relacion: 'Puyana se pasó la noche pidiéndole al DJ «una más, la última».',
+    forense: 'Apenas deja marcas visibles en el cuello.',
     pistaInocente:
-      'el análisis de la copa de Puyana y de la botella sale limpio: ni rastro de tóxicos en nada de lo que bebió esa noche',
+      'el cable XLR de sonido lo desconectó el propio DJ cuando saltaron los plomos, y lo tuvo en la mano, enrollado, hasta que volvió la luz',
     comoFue:
-      'El arma fue el veneno en copa: unas gotas en el coñac de Puyana, que brindó sin saber que se estaba despidiendo.',
+      'El arma fue el cable XLR de sonido: tres metros que cortaron la música de Puyana para siempre.',
   },
   {
-    id: 'llave-inglesa',
+    id: 'copa',
     categoria: 'arma',
-    nombre: 'Llave inglesa',
-    conArticulo: 'la llave inglesa',
+    nombre: 'Copa de cóctel envenenada',
+    conArticulo: 'la copa de cóctel envenenada',
     monograma: 'IV',
-    tono: '#6b6f73',
-    lema: 'Una herramienta vulgar en una casa demasiado elegante.',
+    tono: '#3ee07a',
+    lema: 'Un combinado de autor. El último.',
     ficha: [
-      { etiqueta: 'Material', valor: 'Acero forjado' },
-      { etiqueta: 'Longitud', valor: '38 cm' },
-      { etiqueta: 'Ubicación habitual', valor: 'Caja de herramientas del sótano' },
-      { etiqueta: 'Acceso', valor: 'Personal de mantenimiento' },
+      { etiqueta: 'Recipiente', valor: 'Copa de cristal fino' },
+      { etiqueta: 'Contenido', valor: 'Combinado de autor' },
+      { etiqueta: 'Añadido', valor: 'Unas gotas de sedante inodoro' },
+      { etiqueta: 'Efecto', valor: 'Simula un colapso' },
     ],
     descripcion:
-      'Una llave ajustable, grasienta, con las iniciales del antiguo jardinero grabadas a punta de navaja en el mango.',
-    relacion: 'Nadie recuerda que Puyana la tocara jamás. Y precisamente por eso nadie la buscaría.',
-    forense: 'Deja contusiones irregulares y restos de grasa mineral en la ropa de la víctima.',
+      'Copa de cristal fino con un combinado de autor y unas gotas de sedante líquido inodoro.',
+    relacion: 'Puyana nunca rechaza una copa, y menos si es gratis.',
+    forense: 'Simula un colapso por exceso de alcohol y estrés.',
     pistaInocente:
-      'la llave inglesa no ha salido de la caja de herramientas del sótano: el candado de la caja está oxidado y sigue cerrado',
+      'el análisis de la última copa de Puyana sale limpio: solo había ginebra, tónica y demasiado hielo',
     comoFue:
-      'El arma fue la llave inglesa, subida del sótano envuelta en un trapo: un objeto que nadie habría relacionado con una gala.',
+      'El arma fue la copa de cóctel envenenada: Puyana brindó por los novios sin saber que brindaba por última vez.',
   },
   {
-    id: 'carta-incriminatoria',
+    id: 'toallero',
     categoria: 'arma',
-    nombre: 'Carta incriminatoria',
-    conArticulo: 'la carta incriminatoria',
+    nombre: 'Barra metálica de toallero',
+    conArticulo: 'la barra metálica del toallero',
     monograma: 'V',
-    tono: '#b0702a',
-    lema: 'Algunas palabras matan. Esta, literalmente.',
+    tono: '#c7d2fe',
+    lema: 'Fría, cromada y contundente.',
     ficha: [
-      { etiqueta: 'Formato', valor: 'Sobre de lino con lacre rojo' },
-      { etiqueta: 'Remitente', valor: 'Sin firmar' },
-      { etiqueta: 'Ubicación habitual', valor: 'Bandeja del correo' },
-      { etiqueta: 'Peculiaridad', valor: 'Lacre de textura extraña' },
+      { etiqueta: 'Material', valor: 'Acero cromado macizo' },
+      { etiqueta: 'Procedencia', valor: 'Lavabos de piedra negra, Baños' },
+      { etiqueta: 'Estado', valor: 'Arrancada de la pared' },
+      { etiqueta: 'Rastro', valor: 'No deja astillas' },
     ],
-    descripcion:
-      'Un sobre que llegó a mediodía con la inscripción «Para leer a solas». Contenía, supuestamente, pruebas contra uno de los invitados.',
-    relacion: 'Puyana coleccionaba secretos ajenos como otros coleccionan sellos. Ninguna carta así se quedaba sin abrir.',
-    forense: 'Un lacre mezclado con un tóxico de contacto penetra por la piel de los dedos en pocos minutos.',
+    descripcion: 'Tubo macizo de acero cromado arrancado de los lavabos de piedra negra de los Baños.',
+    relacion: 'Puyana pasó por los baños tres veces esa noche.',
+    forense: 'Un objeto contundente y frío que no deja astillas.',
     pistaInocente:
-      'la carta incriminatoria nunca llegó a manos de Puyana: apareció sin abrir en la bandeja del correo, con el lacre intacto',
+      'la barra del toallero no se usó: la arrancó el personal de limpieza a las 2:00 porque se había soltado, y desde entonces estaba guardada bajo llave en su taquilla',
     comoFue:
-      'El arma fue la carta incriminatoria: su lacre estaba impregnado de un tóxico de contacto. Puyana la abrió con los dedos, como siempre, y leyó su propia sentencia.',
+      'El arma fue la barra metálica del toallero: fría, cromada y escondida después entre toallas mojadas.',
   },
   {
-    id: 'cuerda-seda',
+    id: 'abridor',
     categoria: 'arma',
-    nombre: 'Cuerda de seda',
-    conArticulo: 'la cuerda de seda',
+    nombre: 'Abridor de botellas de latón',
+    conArticulo: 'el abridor de botellas de latón',
     monograma: 'VI',
-    tono: '#8f2b4f',
-    lema: 'Suave al tacto. Implacable al cerrarse.',
+    tono: '#f6b93b',
+    lema: 'Abre botellas. Y otras cosas.',
     ficha: [
-      { etiqueta: 'Material', valor: 'Seda trenzada' },
-      { etiqueta: 'Longitud', valor: '1,8 m' },
-      { etiqueta: 'Ubicación habitual', valor: 'Cortinas del Salón de baile' },
-      { etiqueta: 'Acceso', valor: 'Cualquiera que pasara por el salón' },
+      { etiqueta: 'Forma', valor: 'Llave antigua de coleccionista' },
+      { etiqueta: 'Material', valor: 'Latón pesado' },
+      { etiqueta: 'Procedencia', valor: 'Merchandising VIP de la Terraza' },
+      { etiqueta: 'Detalle', valor: 'Punta afilada' },
     ],
-    descripcion: 'Un cordón granate con borlas doradas que recoge las cortinas de terciopelo del Salón de baile.',
-    relacion: 'Puyana hizo traer la seda de Lyon para la gala. Quería que todo, hasta el último detalle, fuera perfecto.',
-    forense: 'La seda apenas deja marcas visibles si se usa con un pañuelo debajo; hay que buscarlas con lupa.',
+    descripcion:
+      'Abridor pesado con forma de llave antigua de coleccionista, parte del merchandising VIP de la Terraza.',
+    relacion: 'Puyana se guardó dos en el bolsillo nada más llegar a la zona VIP.',
+    forense: 'Su punta afilada permite una estocada precisa y discreta.',
     pistaInocente:
-      'la cuerda de seda sigue anudada a las cortinas del salón; el nudo original del tapicero está cubierto de polvo y nadie lo ha deshecho',
+      'los abridores de latón del merchandising VIP están todos contados: los dos de Puyana seguían en su bolsillo y el resto, en su caja precintada',
     comoFue:
-      'El arma fue la cuerda de seda, arrancada de las cortinas durante el apagón: silenciosa, rápida y devuelta a su sitio antes de que volviera la luz.',
+      'El arma fue el abridor de botellas de latón: una estocada precisa con la punta, y de vuelta a la caja del merchandising.',
   },
 ];
 
 export const LUGARES: Lugar[] = [
   {
-    id: 'biblioteca',
+    id: 'hall',
     categoria: 'lugar',
-    nombre: 'Biblioteca',
-    conArticulo: 'la Biblioteca',
-    enLugar: 'en la Biblioteca',
+    nombre: 'Hall de entrada',
+    conArticulo: 'el Hall de entrada',
+    enLugar: 'en el Hall de entrada',
+    monograma: 'H',
+    tono: '#f6b93b',
+    lema: 'Todo el que entra sale en cámara.',
+    ficha: [
+      { etiqueta: 'Planta', valor: 'Baja' },
+      { etiqueta: 'Acceso', valor: 'Puerta principal desde Plaza de España' },
+      { etiqueta: 'Vigilancia', valor: 'Cámaras hacia el acceso' },
+      { etiqueta: 'Ambiente', valor: 'Mármol brillante y luz tenue' },
+    ],
+    descripcion:
+      'Mármol brillante, mostrador de recepción con luz tenue y cámaras apuntando al acceso principal desde Plaza de España.',
+    relacion: 'Por aquí entró Puyana a medianoche gritando «¡que empiece la fiesta!».',
+    detalle:
+      'Los cordones de terciopelo que ordenan el paso están sueltos y uno de ellos ha desaparecido de su poste.',
+    pistaInocente:
+      'las cámaras del Hall de entrada tienen batería propia y grabaron todo el apagón sin cortes: Puyana no vuelve a aparecer en ellas',
+    comoFue:
+      'Todo ocurrió en el Hall de entrada, en el único rincón que las cámaras no cubren. Después sacaron el cuerpo por la puerta de servicio hasta el contenedor.',
+  },
+  {
+    id: 'barra',
+    categoria: 'lugar',
+    nombre: 'Barra',
+    conArticulo: 'la Barra',
+    enLugar: 'en la Barra',
     monograma: 'B',
-    tono: '#5a3a22',
-    lema: 'Doce mil libros y ni un solo testigo.',
+    tono: '#ff9f1c',
+    lema: 'Última ronda a las 3:45.',
     ficha: [
-      { etiqueta: 'Planta', valor: 'Primera, ala oeste' },
-      { etiqueta: 'Accesos', valor: 'Puerta de roble y pasadizo tras la estantería' },
-      { etiqueta: 'Iluminación', valor: 'Lámparas de gas' },
-      { etiqueta: 'Ambiente', valor: 'Olor a cuero y ceniza' },
+      { etiqueta: 'Planta', valor: '27, parte oeste de la terraza' },
+      { etiqueta: 'Iluminación', valor: 'Retroiluminada en ámbar' },
+      { etiqueta: 'Protección', valor: 'Cristalera cortavientos' },
+      { etiqueta: 'Ambiente', valor: 'Botellas de alta gama y relámpagos' },
     ],
-    descripcion: 'Dos pisos de estanterías unidos por una escalera de caracol. Las alfombras gruesas se tragan cualquier paso.',
-    relacion: 'Era el refugio de Puyana. Allí escribía sus cartas, y allí guardaba lo que no quería que nadie leyera.',
-    detalle: 'Un tomo de derecho marítimo está colocado del revés en el estante más alto.',
+    descripcion:
+      'Barra retroiluminada en tonos ámbar, cristalera cortavientos y botellas de alta gama reflejando los relámpagos sobre Madrid.',
+    relacion: 'El sitio favorito de Puyana: siempre pedía de dos en dos, «por si acaso».',
+    detalle:
+      'Falta una botella de ginebra premium sin abrir y bajo el mostrador hay una servilleta manchada de tinta.',
     pistaInocente:
-      'la Biblioteca permaneció cerrada toda la noche: la humedad de la tormenta hinchó su puerta de roble y nadie logró abrirla hasta el amanecer',
-    comoFue: 'Todo ocurrió en la Biblioteca, entre estanterías que ahogaron cualquier grito.',
+      'en la Barra no dejó de haber gente pidiendo en todo el apagón: los camareros sirvieron a oscuras con la linterna del móvil y nadie vio a Puyana por allí',
+    comoFue:
+      'Todo ocurrió detrás de la Barra, a oscuras, entre cubiteras y gente pidiendo a gritos. Después bajaron el cuerpo por el montacargas hasta el contenedor.',
   },
   {
-    id: 'invernadero',
+    id: 'pista',
     categoria: 'lugar',
-    nombre: 'Invernadero',
-    conArticulo: 'el Invernadero',
-    enLugar: 'en el Invernadero',
-    monograma: 'I',
-    tono: '#2f6b45',
-    lema: 'Orquídeas, cristal y una caja fuerte que no debería estar ahí.',
+    nombre: 'Pista de baile',
+    conArticulo: 'la Pista de baile',
+    enLugar: 'en la Pista de baile',
+    monograma: 'DJ',
+    tono: '#ff2e93',
+    lema: 'Aquí nadie se queda quieto.',
     ficha: [
-      { etiqueta: 'Planta', valor: 'Baja, jardín sur' },
-      { etiqueta: 'Accesos', valor: 'Puerta acristalada y trampilla de riego' },
-      { etiqueta: 'Temperatura', valor: '28 °C constantes' },
-      { etiqueta: 'Peculiaridad', valor: 'Caja fuerte oculta entre helechos' },
+      { etiqueta: 'Planta', valor: '27, centro de la terraza' },
+      { etiqueta: 'Suelo', valor: 'Iluminado, a cielo abierto' },
+      { etiqueta: 'Cabina', valor: 'DJ con luces burdeos' },
+      { etiqueta: 'Sonido', valor: 'Altavoces vibrando bajo la tormenta' },
     ],
-    descripcion: 'Una cúpula de hierro y cristal llena de plantas tropicales. La lluvia sobre el techo suena como un aplauso interminable.',
-    relacion: 'Puyana pasaba allí las mañanas cuidando sus orquídeas. Escondió su caja fuerte bajo la más rara de todas.',
-    detalle: 'Hay una orquídea negra recién trasplantada, con la tierra todavía removida.',
+    descripcion:
+      'Suelo iluminado bajo el cielo abierto, cabina de DJ con luces burdeos y altavoces vibrando bajo la tormenta.',
+    relacion: 'Puyana abrió la pista con Juanky y no la soltó en toda la noche.',
+    detalle: 'Un cable de sonido está desconectado de golpe y hay marcas de arrastre recientes junto a los altavoces.',
     pistaInocente:
-      'el suelo de tierra del Invernadero no tiene una sola pisada fresca: el jardinero lo rastrilló a las diez y sigue intacto',
-    comoFue: 'Todo ocurrió en el Invernadero, donde el estruendo de la lluvia sobre el cristal cubrió cualquier ruido.',
+      'la Pista de baile estaba llena: decenas de invitados abrazados cantando «Pájaros de barro» a oscuras; allí nadie pudo hacer nada sin que lo vieran',
+    comoFue:
+      'Todo ocurrió en la Pista de baile, en plena oscuridad, mientras la terraza entera cantaba «Pájaros de barro». Las marcas de arrastre llevan hasta la salida de servicio y el contenedor.',
   },
   {
-    id: 'bodega',
+    id: 'terraza',
     categoria: 'lugar',
-    nombre: 'Bodega',
-    conArticulo: 'la Bodega',
-    enLugar: 'en la Bodega',
-    monograma: 'B',
-    tono: '#5b1630',
-    lema: 'Tres mil botellas. Algunas, más viejas que los invitados.',
+    nombre: 'Terraza',
+    conArticulo: 'la Terraza',
+    enLugar: 'en la Terraza',
+    monograma: '27',
+    tono: '#22d3ee',
+    lema: 'Madrid a tus pies. Literalmente.',
     ficha: [
-      { etiqueta: 'Planta', valor: 'Sótano' },
-      { etiqueta: 'Accesos', valor: 'Escalera de piedra desde la cocina' },
-      { etiqueta: 'Temperatura', valor: '12 °C' },
-      { etiqueta: 'Peculiaridad', valor: 'Barrica n.º 12, siempre cerrada' },
+      { etiqueta: 'Planta', valor: 'Última: zona VIP y pasarela de cristal' },
+      { etiqueta: 'Vistas', valor: '360°, con la Gran Vía a los pies' },
+      { etiqueta: 'Barandillas', valor: 'De vidrio' },
+      { etiqueta: 'Peculiaridad', valor: 'Pasarela suspendida en el vacío' },
     ],
-    descripcion: 'Bóvedas de ladrillo, humedad y silencio. El eco devuelve cada paso multiplicado por tres.',
-    relacion: 'Puyana bajaba solo a elegir el vino de cada gala. Nadie más tenía llave de la reserva.',
-    detalle: 'Falta una botella de 1964 en la estantería de la reserva privada.',
+    descripcion:
+      'Vistas panorámicas de 360 grados a la Gran Vía, barandillas de vidrio y la famosa pasarela suspendida en el vacío.',
+    relacion: 'Puyana se hizo veinte fotos en la pasarela de cristal para el grupo de la boda.',
+    detalle: 'Uno de los paneles de cristal de la barandilla tiene una grieta reciente a la altura de un hombro.',
     pistaInocente:
-      'la Bodega quedó inundada con el primer aguacero: el agua llega a las rodillas y nadie bajó a ella en toda la noche',
-    comoFue: 'Todo ocurrió en la Bodega, bajo bóvedas de ladrillo donde ningún grito llega al piso de arriba.',
+      'la zona VIP y la pasarela de cristal de la Terraza estaban cerradas con cadena desde las 3:15 por el viento, y el vigilante no se movió de la entrada',
+    comoFue:
+      'Todo ocurrió en la Terraza, junto a la pasarela de cristal; la grieta del panel lo dice todo. Después bajaron el cuerpo hasta el contenedor por la escalera de emergencia.',
   },
   {
-    id: 'salon-baile',
+    id: 'banos',
     categoria: 'lugar',
-    nombre: 'Salón de baile',
-    conArticulo: 'el Salón de baile',
-    enLugar: 'en el Salón de baile',
-    monograma: 'S',
-    tono: '#a3802f',
-    lema: 'Doscientas velas, una orquesta y un apagón perfecto.',
+    nombre: 'Baños',
+    conArticulo: 'los Baños',
+    enLugar: 'en los Baños',
+    monograma: 'WC',
+    tono: '#c7d2fe',
+    lema: 'Lo que pasa en el baño se queda en el baño.',
     ficha: [
-      { etiqueta: 'Planta', valor: 'Baja, ala central' },
-      { etiqueta: 'Accesos', valor: 'Tres puertas y dos balcones' },
-      { etiqueta: 'Aforo', valor: '120 personas' },
-      { etiqueta: 'Peculiaridad', valor: 'Espejos de suelo a techo' },
+      { etiqueta: 'Planta', valor: '26 (penúltima)' },
+      { etiqueta: 'Espejos', valor: 'De suelo a techo' },
+      { etiqueta: 'Lavabos', valor: 'Piedra negra' },
+      { etiqueta: 'Ambiente', valor: 'Luz dorada y música que amortigua los pasos' },
     ],
-    descripcion: 'Suelos de mármol ajedrezado, lámparas de araña y espejos que multiplican cada sombra.',
-    relacion: 'Puyana organizó la gala para anunciar algo «que cambiaría la vida de todos los presentes».',
-    detalle: 'Uno de los espejos tiene una grieta reciente, a la altura de un hombro.',
+    descripcion:
+      'Espejos de suelo a techo, luz indirecta dorada, lavabos de piedra negra y música ambiental que amortigua los pasos.',
+    relacion: 'Puyana subió y bajó a los baños varias veces durante la noche.',
+    detalle:
+      'Un cubículo está cerrado por dentro sin nadie dentro y el reloj digital de la pared se paró justo a las 3:30.',
     pistaInocente:
-      'en el Salón de baile hubo decenas de testigos durante todo el apagón; allí nadie pudo moverse sin ser visto',
-    comoFue: 'Todo ocurrió en el Salón de baile, a oscuras, entre decenas de invitados que no vieron nada.',
+      'la persona de limpieza de los Baños no se movió de la puerta en todo el apagón y jura que solo entraron dos invitadas a retocarse',
+    comoFue:
+      'Todo ocurrió en los Baños de la planta 26, con la música ambiental tapando cualquier ruido. Después bajaron el cuerpo por la escalera de servicio hasta el contenedor.',
   },
   {
-    id: 'despacho',
+    id: 'ascensor',
     categoria: 'lugar',
-    nombre: 'Despacho',
-    conArticulo: 'el Despacho',
-    enLugar: 'en el Despacho',
-    monograma: 'D',
-    tono: '#6b0f1a',
-    lema: 'Donde Puyana firmaba fortunas y sentencias.',
+    nombre: 'Ascensor',
+    conArticulo: 'el Ascensor',
+    enLugar: 'en el Ascensor',
+    monograma: '↑',
+    tono: '#a855f7',
+    lema: 'Planta 27: todo el mundo fuera.',
     ficha: [
-      { etiqueta: 'Planta', valor: 'Primera, ala este' },
-      { etiqueta: 'Accesos', valor: 'Puerta blindada con alarma' },
-      { etiqueta: 'Iluminación', valor: 'Lámpara de escritorio verde' },
-      { etiqueta: 'Peculiaridad', valor: 'Reloj de pared detenido' },
+      { etiqueta: 'Recorrido', valor: 'Directo del hall a la terraza' },
+      { etiqueta: 'Cabina', valor: 'Panorámica, acristalada' },
+      { etiqueta: 'Acabados', valor: 'Paneles dorados' },
+      { etiqueta: 'Sonido', valor: 'Hilo musical con estática de los rayos' },
     ],
-    descripcion: 'Madera oscura, un escritorio inmenso y un reloj de péndulo que dejó de sonar esta noche.',
-    relacion: 'Ningún invitado entraba sin ser llamado. Allí Puyana cerraba los tratos que nadie más debía conocer.',
-    detalle: 'El cristal del reloj está roto y las agujas se han quedado clavadas.',
+    descripcion:
+      'Cabina panorámica acristalada con paneles dorados y un hilo musical que se corta con la estática de los rayos. Sube directo desde el hall hasta la terraza.',
+    relacion: 'Puyana subió en el ascensor panorámico grabando vídeos para el grupo.',
+    detalle:
+      'El ascensor se quedó detenido entre la planta 26 y la 27, y el botón de emergencia tiene el cristal roto.',
     pistaInocente:
-      'la alarma del Despacho está conectada a su puerta blindada y no saltó en toda la noche: nadie la abrió',
-    comoFue: 'Todo ocurrió en el Despacho, tras una puerta blindada que Puyana abrió él mismo a su asesino.',
-  },
-  {
-    id: 'cocina',
-    categoria: 'lugar',
-    nombre: 'Cocina',
-    conArticulo: 'la Cocina',
-    enLugar: 'en la Cocina',
-    monograma: 'C',
-    tono: '#9a5a1f',
-    lema: 'Fuego, cuchillos y demasiadas manos.',
-    ficha: [
-      { etiqueta: 'Planta', valor: 'Baja, ala de servicio' },
-      { etiqueta: 'Accesos', valor: 'Pasillo de servicio y escalera a la bodega' },
-      { etiqueta: 'Personal', valor: 'Chef y cuatro pinches' },
-      { etiqueta: 'Peculiaridad', valor: 'Montaplatos hasta el primer piso' },
-    ],
-    descripcion: 'Fogones de hierro, cobre colgado del techo y un montaplatos que sube directamente al ala de los señores.',
-    relacion: 'Puyana bajaba de madrugada a probar las salsas a escondidas. Era el único sitio donde se le veía sonreír.',
-    detalle: 'El montaplatos está detenido entre dos pisos.',
-    pistaInocente:
-      'la Cocina no se quedó vacía ni un minuto: los pinches trabajaron sin descanso y juran que allí no entró nadie más',
-    comoFue: 'Todo ocurrió en la Cocina, entre el ruido de los fogones y el ir y venir del montaplatos.',
+      'cuando se quedó atascado entre la 26 y la 27, el Ascensor estaba vacío: la cámara interior lo confirma y nadie volvió a usarlo hasta que lo revisó el técnico',
+    comoFue:
+      'Todo ocurrió en el Ascensor, atascado entre la planta 26 y la 27; el cristal roto del botón de emergencia fue el último intento de Puyana. Al bajar, el cuerpo acabó en el contenedor.',
   },
 ];
 
@@ -500,10 +520,8 @@ export function porId(id: string): Elemento {
   return e;
 }
 
-/** "la Condesa Elena", "el Dr. Vance", "Lady Clara"... para usar dentro de una frase. */
+/** Nombre tal y como se usa dentro de una frase (los apodos no llevan artículo). */
 export function conTratamiento(nombre: string): string {
-  if (/^(Condesa)\b/.test(nombre)) return `la ${nombre}`;
-  if (/^(Dr\.|Inspector|Chef|Capitán)/.test(nombre)) return `el ${nombre}`;
   return nombre;
 }
 
@@ -517,13 +535,46 @@ export function lugar(id: string): Lugar {
   return porId(id) as Lugar;
 }
 
+
+/** En la historia predeterminada, sospechosos cuyas pistas exculpatorias salen las últimas. */
+export const ULTIMOS_EN_EXCULPARSE: readonly string[] = ['juaky', 'paula'];
+
+/** Historia predeterminada: siempre la misma solución. */
+export const HISTORIA_PREDETERMINADA = {
+  solucion: { sospechoso: 'kike', arma: 'copa', lugar: 'terraza' },
+  /** Semilla fija: los puzles y las pistas también son siempre los mismos. */
+  semilla: 20261127,
+  resolucion: [
+    'Kike el verde nunca olvidó aquel «Pirri» en plena Gran Vía. Toda la noche fingió estar al teléfono con su pareja, pero la llamada la colgó en cuanto se fue la luz.',
+    'A oscuras, mientras la terraza entera cantaba «Pájaros de barro», le ofreció a Puyana un combinado de autor «para hacer las paces». Llevaba unas gotas de sedante inodoro.',
+    'Puyana, mareado, salió a la pasarela de cristal a tomar el aire. Se apoyó en la barandilla, justo donde ahora hay una grieta a la altura del hombro, y cayó al vacío.',
+    'Su reloj se paró a las 3:50 con el golpe. A las 4, con la terraza ya cerrada, el personal del hotel lo encontró en el contenedor del callejón, veintisiete plantas más abajo.',
+  ],
+};
+
 export const HISTORIA = {
   titulo: '¿Quién mató a Puyana?',
-  fecha: 'Villa Puyana · 13 de noviembre · 23:40',
-  parrafos: [
-    'Don Aurelio Puyana cumplía sesenta años y quiso celebrarlo como vivía: a lo grande y con público. Reunió en su mansión a seis invitados, cada uno con una deuda pendiente con él, y les prometió un anuncio que «cambiaría la vida de todos los presentes».',
-    'A las 23:40 la tormenta tumbó la línea eléctrica. Durante veinte minutos, Villa Puyana fue solo oscuridad, relámpagos y el piano de alguien intentando calmar los nervios.',
-    'Cuando volvió la luz, Puyana no estaba en el salón. Lo encontraron sin vida poco después. El reloj de su despacho se había detenido, la carretera estaba inundada y la policía no llegaría hasta el amanecer.',
-    'Seis sospechosos. Seis armas posibles. Seis estancias en las que pudo ocurrir. Solo una combinación es la verdadera, y antes de que salga el sol tendrás que demostrar cuál.',
+  fecha: 'Hotel Riu Plaza España · Pre boda de Juanky y Paula · 3:30 h',
+  secciones: [
+    {
+      etiqueta: 'La pre boda',
+      texto:
+        'Terraza del Hotel Riu Plaza España, planta 27, con todo Madrid a los pies. Juanky y Paula celebran su pre boda con el grupo al completo: copas, música, una tormenta de verano iluminando la Gran Vía y Puyana, como siempre, convertido en el alma de la fiesta.',
+    },
+    {
+      etiqueta: 'El apagón',
+      texto:
+        'Son las 3:30 y la terraza cierra a las 4. Justo entonces se va la luz. Nadie se asusta: alguien arranca con «Pájaros de barro» y la terraza entera se pone a cantar a oscuras, abrazada.',
+    },
+    {
+      etiqueta: 'El cuerpo',
+      texto:
+        'Cuando vuelve la luz, nadie encuentra a Puyana. A las 4, con la terraza ya cerrada, aparece sin vida dentro de un contenedor de basura. Su reloj se ha parado a las 3:50.',
+    },
+    {
+      etiqueta: 'Tu misión',
+      texto:
+        'Seis sospechosos, seis armas y seis lugares. Doce misiones por el hotel, tres rondas de testimonios y una sola acusación antes de que llegue la policía.',
+    },
   ],
 };

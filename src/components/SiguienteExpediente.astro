@@ -1,4 +1,5 @@
 ---
+import BotonJugar from './BotonJugar.astro';
 import { ruta } from '../lib/ruta.ts';
 import BotonPrincipal from './BotonPrincipal.astro';
 
@@ -8,15 +9,15 @@ interface Props {
 const { siguiente } = Astro.props;
 ---
 
-<section data-escena data-tono="#6b0f1a" class="relative flex min-h-[80svh] items-center py-24">
+<section data-escena data-tono="#b0127f" class="relative flex min-h-[80svh] items-center py-24">
   <div class="mx-auto w-full max-w-md px-5 text-center">
-    <p data-anim class="font-sans text-[11px] font-bold tracking-[0.35em] text-dorado-500 uppercase">Fin de esta sección</p>
+    <p data-anim class="font-sans text-[11px] font-bold tracking-[0.35em] text-champan-500 uppercase">Fin de esta sección</p>
     <h2 data-anim class="mt-4 font-display text-4xl leading-tight text-crema">
-      La verdad está en algún lugar de esta casa.
+      La verdad está en algún rincón de esta terraza.
     </h2>
     <div data-anim class="mt-10 grid gap-3">
-      <BotonPrincipal href="/jugar" texto="Iniciar el juego" detalle="Cinco misiones antes del amanecer" />
-      {siguiente && <BotonPrincipal href={siguiente.href} texto={siguiente.texto} variante="burdeos" />}
+      <BotonJugar detalle="15 misiones antes de que llegue la policía" />
+      {siguiente && <BotonPrincipal href={siguiente.href} texto={siguiente.texto} variante="fucsia" />}
       <a href={ruta("/")} class="mt-2 inline-flex min-h-11 items-center justify-center font-sans text-sm text-crema/60 underline-offset-4 hover:underline">
         Volver al inicio
       </a>

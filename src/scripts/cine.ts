@@ -71,11 +71,10 @@ export function iniciarCine(): void {
     escena.querySelectorAll<HTMLElement>('[data-revelar]').forEach((titulo) => {
       gsap.fromTo(
         titulo,
-        { clipPath: 'inset(0% 100% 0% 0%)', x: -30, letterSpacing: '0.12em' },
+        { clipPath: 'inset(-10% 100% -10% 0%)', x: -20 },
         {
-          clipPath: 'inset(0% 0% 0% 0%)',
+          clipPath: 'inset(-10% -5% -10% 0%)',
           x: 0,
-          letterSpacing: '0em',
           ease: 'none',
           scrollTrigger: { trigger: escena, start: 'top 85%', end: 'top 25%', scrub: 0.6 },
         },

@@ -1,37 +1,44 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-carbon-950: #0b0a0b;
-  --color-carbon-900: #141214;
-  --color-carbon-800: #1e1b1e;
-  --color-carbon-700: #2a262a;
-  --color-carbon-600: #3a353a;
+  /* Noche: fondos */
+  --color-noche-950: #07050f;
+  --color-noche-900: #0e0a1c;
+  --color-noche-800: #171230;
+  --color-noche-700: #241c45;
+  --color-noche-600: #35295f;
 
-  --color-burdeos-950: #2a0509;
-  --color-burdeos-900: #4a0a12;
-  --color-burdeos-800: #6b0f1a;
-  --color-burdeos-700: #8f1d2c;
-  --color-burdeos-600: #b3263a;
+  /* Fucsia neón: acentos y peligro */
+  --color-fucsia-950: #2a0620;
+  --color-fucsia-900: #4a0b3a;
+  --color-fucsia-800: #7a0f5c;
+  --color-fucsia-700: #b0127f;
+  --color-fucsia-600: #ff2e93;
 
-  --color-dorado-300: #f0dca0;
-  --color-dorado-400: #e6c77a;
-  --color-dorado-500: #c9a24a;
-  --color-dorado-600: #a3802f;
+  /* Champán: botones y textos destacados */
+  --color-champan-300: #fff0b8;
+  --color-champan-400: #ffd76e;
+  --color-champan-500: #f6b93b;
+  --color-champan-600: #d48f12;
 
-  --color-crema: #efe6d2;
+  /* Cian neón */
+  --color-cian-400: #5ef2ff;
+  --color-cian-500: #22d3ee;
 
-  --font-display: 'Didot', 'Bodoni 72', 'Bodoni MT', 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --color-crema: #f4eefe;
+
+  --font-display: 'Futura', 'Century Gothic', 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif;
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
 :root {
   /* Color de la "iluminación" de la escena actual; GSAP lo anima al hacer scroll. */
-  --tono: #6b0f1a;
+  --tono: #b0127f;
   color-scheme: dark;
 }
 
 html {
-  background: var(--color-carbon-950);
+  background: var(--color-noche-950);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -41,6 +48,7 @@ body {
 
 /* Fondo fijo que cambia de luz según la sección visible. */
 .escenario {
+  overflow: hidden;
   position: fixed;
   inset: 0;
   z-index: -1;
@@ -48,10 +56,38 @@ body {
   background:
     radial-gradient(120% 70% at 50% -10%, color-mix(in srgb, var(--tono) 60%, transparent), transparent 65%),
     radial-gradient(90% 60% at 100% 110%, color-mix(in srgb, var(--tono) 30%, transparent), transparent 70%),
-    var(--color-carbon-950);
+    var(--color-noche-950);
 }
 
-/* Grano de película sutil */
+/* Focos de discoteca girando lentamente */
+.escenario::before {
+  content: '';
+  position: absolute;
+  inset: -50%;
+  opacity: 0.22;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    color-mix(in srgb, var(--color-cian-500) 70%, transparent) 12deg,
+    transparent 30deg,
+    transparent 110deg,
+    color-mix(in srgb, var(--color-fucsia-600) 70%, transparent) 125deg,
+    transparent 145deg,
+    transparent 220deg,
+    color-mix(in srgb, var(--color-champan-400) 60%, transparent) 232deg,
+    transparent 250deg
+  );
+  filter: blur(40px);
+  animation: focos 26s linear infinite;
+}
+
+@keyframes focos {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Grano sutil */
 .escenario::after {
   content: '';
   position: absolute;
@@ -61,16 +97,24 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
-.texto-oro {
-  background: linear-gradient(180deg, #f6e7b8 0%, #e6c77a 38%, #b88a33 72%, #e6c77a 100%);
+.texto-neon {
+  background: linear-gradient(100deg, #5ef2ff 0%, #ff2e93 45%, #ffd76e 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  filter: drop-shadow(0 0 18px rgb(255 46 147 / 0.45));
+}
+
+.brillo-neon {
+  text-shadow:
+    0 0 8px rgb(255 46 147 / 0.8),
+    0 0 24px rgb(255 46 147 / 0.45);
 }
 
 .contorno {
   color: transparent;
-  -webkit-text-stroke: 1px color-mix(in srgb, var(--t, #c9a24a) 70%, white 10%);
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--t, #ff2e93) 80%, white 10%);
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--t, #ff2e93) 60%, transparent));
 }
 
 /* Modales del juego */

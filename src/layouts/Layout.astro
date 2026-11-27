@@ -11,7 +11,7 @@ interface Props {
 
 const {
   title = '¿Quién mató a Puyana?',
-  description = 'Un misterio jugable en la mansión Puyana: seis sospechosos, seis armas, seis lugares y una sola verdad.',
+  description = 'Un misterio jugable en la pre boda de Juanky y Paula, en la terraza del Hotel Riu Plaza España: seis sospechosos, seis armas, seis lugares y una sola verdad.',
   fija = false,
 } = Astro.props;
 ---
@@ -22,12 +22,12 @@ const {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#141214" />
+    <meta name="theme-color" content="#0e0a1c" />
     <link rel="icon" type="image/svg+xml" href={ruta("/favicon.svg")} />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
   </head>
-  <body class:list={['bg-carbon-950 font-sans text-crema antialiased', fija && 'h-svh overflow-hidden overscroll-none']}>
+  <body class:list={['bg-noche-950 font-sans text-crema antialiased', fija && 'h-svh overflow-hidden overscroll-none']}>
     <div class="escenario" aria-hidden="true"></div>
     <slot />
   </body>

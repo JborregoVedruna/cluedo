@@ -5,13 +5,18 @@ interface Props {
   texto: string;
   tono: string;
 }
+import { estiloTitulo } from '../lib/tituloFluido.ts';
 const { antetitulo, titulo, texto, tono } = Astro.props;
 ---
 
 <section data-escena data-tono={tono} class="relative flex min-h-svh items-end overflow-hidden px-5 pt-28 pb-16 sm:px-8">
   <div class="mx-auto w-full max-w-5xl">
-    <p data-anim class="font-sans text-[11px] font-bold tracking-[0.4em] text-dorado-500 uppercase">{antetitulo}</p>
-    <h1 data-revelar class="texto-oro mt-4 font-display text-[clamp(3.4rem,17vw,10rem)] leading-[0.85] uppercase">
+    <p data-anim class="font-sans text-[11px] font-bold tracking-[0.4em] text-champan-500 uppercase">{antetitulo}</p>
+    <h1
+      data-revelar
+      class="texto-neon mt-4 py-[0.08em] font-display leading-none font-extrabold tracking-tight uppercase"
+      style={estiloTitulo(titulo, 17, 10)}
+    >
       {titulo}
     </h1>
     <p data-anim class="mt-6 max-w-lg font-display text-xl leading-relaxed text-crema/85 italic">{texto}</p>

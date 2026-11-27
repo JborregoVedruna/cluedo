@@ -10,33 +10,36 @@ export function candidatosDe(cat: Categoria, descartados: Record<Categoria, stri
   return ELEMENTOS[cat].map((e) => e.id).filter((id) => !descartados[cat].includes(id));
 }
 
-/** Pista de las misiones 1–4: exculpa un sospechoso, un arma y un lugar todavía en juego. */
+/**
+ * Pista de las misiones de lugares y armas: exculpa un elemento de la categoría indicada
+ * que siga en juego (y que no haya señalado ya otra pista pendiente de descarte).
+ */
 export function generarPistaDescarte(
   mision: number,
+  categoria: Categoria,
   solucion: Seleccion,
   descartados: Record<Categoria, string[]>,
+  excluir: string[],
   rng: Rng,
+  /** Elementos que solo se exculpan cuando no queda ningún otro (historia predeterminada). */
+  ultimos: readonly string[] = [],
 ): Pista {
-  const senalados = {} as Seleccion;
-  for (const cat of CATEGORIAS) {
-    const inocentes = candidatosDe(cat, descartados).filter((id) => id !== solucion[cat]);
-    senalados[cat] = elegir(rng, inocentes);
-  }
+  const inocentes = candidatosDe(categoria, descartados).filter((id) => id !== solucion[categoria]);
+  const libres = inocentes.filter((id) => !excluir.includes(id));
+  const base = libres.length ? libres : inocentes;
+  // Los que deben exculparse al final solo salen cuando ya no queda nadie más.
+  const antes = base.filter((id) => !ultimos.includes(id));
+  const id = elegir(rng, antes.length ? antes : base);
   const info = MISIONES[mision];
   return {
     mision,
     titulo: `Misión ${info.numeral} · ${info.titulo}`,
-    parrafos: [
-      info.introPista,
-      `${capitalizar(porId(senalados.sospechoso).pistaInocente)}.`,
-      `${capitalizar(porId(senalados.arma).pistaInocente)}.`,
-      `${capitalizar(porId(senalados.lugar).pistaInocente)}.`,
-    ],
-    senalados,
+    parrafos: [info.introPista, `${capitalizar(porId(id).pistaInocente)}.`],
+    senalado: { categoria, id },
   };
 }
 
-// ---------- Careo final: afirmaciones condicionales ----------
+// ---------- Testimonios: afirmaciones condicionales ----------
 
 interface Literal {
   cat: Categoria;
@@ -64,7 +67,10 @@ function cumple(af: Afirmacion, c: Combinacion): boolean {
 
 function textoLiteral(l: Literal): string {
   const e = porId(l.id);
-  if (l.cat === 'sospechoso') return l.positivo ? `el culpable es ${conTratamiento(e.nombre)}` : `${conTratamiento(e.nombre)} no es el culpable`;
+  if (l.cat === 'sospechoso') {
+    const n = conTratamiento(e.nombre);
+    return l.positivo ? `el culpable es ${n}` : `${n} no es el culpable`;
+  }
   if (l.cat === 'arma') {
     const a = e as Arma;
     return l.positivo ? `el arma es ${a.conArticulo}` : `el arma no es ${a.conArticulo}`;
@@ -90,13 +96,14 @@ function igual(a: Combinacion, b: Combinacion): boolean {
 }
 
 /**
- * Genera afirmaciones condicionales, todas verdaderas para la solución, hasta que
- * entre los candidatos restantes solo quede una combinación posible: la solución.
+ * Afirmaciones condicionales, todas verdaderas para la solución, que entre los candidatos
+ * restantes solo dejan una combinación posible: la solución. Devuelve al menos `minimo`.
  */
 export function generarAfirmaciones(
   solucion: Seleccion,
   descartados: Record<Categoria, string[]>,
   rng: Rng,
+  minimo = 3,
 ): string[] {
   const listas = {
     sospechoso: candidatosDe('sospechoso', descartados),
@@ -104,64 +111,72 @@ export function generarAfirmaciones(
     lugar: candidatosDe('lugar', descartados),
   };
   const abiertas = CATEGORIAS.filter((c) => listas[c].length > 1);
-  let vivas = combinaciones(listas).filter((c) => !igual(c, solucion));
-  const elegidas: Afirmacion[] = [];
-
   if (abiertas.length === 0) return [];
   if (abiertas.length === 1) {
     const cat = abiertas[0];
-    return [`Está demostrado que ${textoLiteral({ cat, id: solucion[cat], positivo: true })}.`];
+    return [capitalizar(`está demostrado que ${textoLiteral({ cat, id: solucion[cat], positivo: true })}.`)];
   }
 
-  for (let intento = 0; intento < 2000 && vivas.length > 0; intento++) {
+  const aleatoria = (): Afirmacion => {
     const catA = elegir(rng, abiertas);
     const catB = elegir(rng, abiertas.filter((c) => c !== catA));
-    const af: Afirmacion = {
+    return {
       tipo: rng() < 0.7 ? 'si' : 'alguna',
       a: { cat: catA, id: elegir(rng, listas[catA]), positivo: rng() < 0.6 },
       b: { cat: catB, id: elegir(rng, listas[catB]), positivo: rng() < 0.6 },
     };
+  };
+
+  const todas = combinaciones(listas).filter((c) => !igual(c, solucion));
+  let vivas = todas;
+  const elegidas: Afirmacion[] = [];
+
+  for (let intento = 0; intento < 2000 && vivas.length > 0; intento++) {
+    const af = aleatoria();
     if (!cumple(af, solucion)) continue;
-    // Evita frases vacías: la parte "si..." debe poder ser cierta en alguna combinación viva.
     const restantes = vivas.filter((c) => cumple(af, c));
     if (restantes.length === vivas.length) continue;
     elegidas.push(af);
     vivas = restantes;
   }
-
   // Respaldo determinista (prácticamente nunca necesario).
   for (const c of vivas) {
     const cat = abiertas.find((k) => c[k] !== solucion[k])!;
-    const otra = abiertas.find((k) => k !== cat)!;
     elegidas.push({
-      tipo: 'si',
-      a: { cat: otra, id: solucion[otra], positivo: true },
+      tipo: 'alguna',
+      a: { cat, id: solucion[cat], positivo: true },
       b: { cat, id: solucion[cat], positivo: true },
     });
   }
 
-  // Elimina afirmaciones redundantes: deja solo las necesarias para que la solución sea única.
-  const todas = combinaciones(listas).filter((c) => !igual(c, solucion));
+  // Quita las redundantes: deja solo las necesarias para que la solución sea única.
   const descartaTodas = (lista: Afirmacion[]) => todas.every((c) => lista.some((af) => !cumple(af, c)));
   for (let i = elegidas.length - 1; i >= 0; i--) {
     const sin = elegidas.filter((_, k) => k !== i);
     if (descartaTodas(sin)) elegidas.splice(i, 1);
   }
 
-  return elegidas.map((af) => capitalizar(textoAfirmacion(af)));
+  const textos = elegidas.map((af) => capitalizar(textoAfirmacion(af)));
+  // Relleno con afirmaciones ciertas (aunque no descarten nada) para repartir entre los testimonios.
+  for (let intento = 0; intento < 500 && textos.length < minimo; intento++) {
+    const af = aleatoria();
+    const t = capitalizar(textoAfirmacion(af));
+    if (cumple(af, solucion) && !textos.includes(t)) textos.splice(Math.floor(rng() * (textos.length + 1)), 0, t);
+  }
+  return textos;
 }
 
-export function generarPistaCondicional(
-  mision: number,
-  solucion: Seleccion,
-  descartados: Record<Categoria, string[]>,
-  rng: Rng,
-): Pista {
+/** Reparte las afirmaciones entre los testimonios: la parte `k` de `n`. */
+export function parteDeAfirmaciones(todas: string[], k: number, n: number): string[] {
+  return todas.filter((_, i) => i % n === k);
+}
+
+export function generarPistaTestimonio(mision: number, condicionales: string[]): Pista {
   const info = MISIONES[mision];
   return {
     mision,
     titulo: `Misión ${info.numeral} · ${info.titulo}`,
     parrafos: [info.introPista],
-    condicionales: generarAfirmaciones(solucion, descartados, rng),
+    condicionales,
   };
 }

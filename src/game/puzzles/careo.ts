@@ -1,21 +1,13 @@
-// Misión 5 · El careo final: tres testigos, exactamente uno miente.
+// Testimonio de los camareros · El careo: tres camareros, exactamente uno miente.
 
-import { SOSPECHOSOS, conTratamiento } from '../../data/caso.ts';
 import { barajar, capitalizar, elegir, entero, type Rng } from '../core/rng.ts';
+import type { PuzleElegir } from './tipos.ts';
+
+const CAMAREROS = ['Rubén, de la barra', 'Lucía, de la zona VIP', 'Dani, el de los chupitos', 'Marta, la encargada', 'Íker, el de las cubiteras'];
 
 type Frase =
   | { tipo: 'miente' | 'verdad'; obj: number }
   | { tipo: 'alguno' | 'ambos'; a: number; b: number };
-
-export interface Testigo {
-  nombre: string;
-  frase: string;
-}
-
-export interface PuzleCareo {
-  testigos: Testigo[];
-  mentiroso: number;
-}
 
 function esCierta(f: Frase, mentiroso: number): boolean {
   switch (f.tipo) {
@@ -44,23 +36,22 @@ function fraseAleatoria(rng: Rng, hablante: number): Frase {
   return { tipo: 'ambos', a: otros[0], b: otros[1] };
 }
 
-function texto(f: Frase, nombres: string[]): string {
+function texto(f: Frase, n: string[]): string {
   switch (f.tipo) {
     case 'miente':
-      return `${nombres[f.obj]} está mintiendo.`;
+      return `${n[f.obj]} está mintiendo.`;
     case 'verdad':
-      return `${nombres[f.obj]} dice la verdad.`;
+      return `${n[f.obj]} dice la verdad.`;
     case 'alguno':
-      return `O ${nombres[f.a]} o ${nombres[f.b]} miente.`;
+      return `O ${n[f.a]} o ${n[f.b]} miente.`;
     case 'ambos':
-      return `${nombres[f.a]} y ${nombres[f.b]} dicen la verdad.`;
+      return `${n[f.a]} y ${n[f.b]} dicen la verdad.`;
   }
 }
 
-export function generarCareo(rng: Rng): PuzleCareo {
-  const nombres = barajar(rng, SOSPECHOSOS)
-    .slice(0, 3)
-    .map((s) => s.nombre);
+export function generarCareo(rng: Rng): PuzleElegir & { mentiroso: number } {
+  const completos = barajar(rng, CAMAREROS).slice(0, 3);
+  const cortos = completos.map((c) => c.split(',')[0]);
   const mentiroso = entero(rng, 0, 2);
   let frases: Frase[] = [];
   for (let intento = 0; intento < 1000; intento++) {
@@ -68,11 +59,11 @@ export function generarCareo(rng: Rng): PuzleCareo {
     const sol = compatibles(frases);
     if (sol.length === 1 && sol[0] === mentiroso) break;
   }
+  const sincero = [0, 1, 2].find((i) => i !== mentiroso)!;
   return {
     mentiroso,
-    testigos: nombres.map((nombre, i) => ({
-      nombre,
-      frase: `«${capitalizar(texto(frases[i], nombres.map(conTratamiento)))}»`,
-    })),
+    correcta: mentiroso,
+    opciones: completos.map((nombre, i) => ({ titulo: nombre, texto: `«${capitalizar(texto(frases[i], cortos))}»` })),
+    ayuda: `Ayuda: ${cortos[sincero]} dice la verdad.`,
   };
 }

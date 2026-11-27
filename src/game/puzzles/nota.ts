@@ -1,4 +1,4 @@
-// Misión 4 · La nota rasgada: reconstruir el orden de cinco fragmentos.
+// Misión · La nota rasgada (Pista de baile): reconstruir el orden de cinco fragmentos.
 
 import { barajarDistinto, elegir, type Rng } from '../core/rng.ts';
 
@@ -12,11 +12,61 @@ export interface PuzleNota {
   orden: string[];
 }
 
+// Cada nota tiene 3 frases que cuentan una misma idea, rotas en 10 trozos.
+// Las mayúsculas y los signos ayudan a encajarlos.
 const NOTAS: string[][] = [
-  ['Si alguien lee esto,', 'es que no llegué', 'a la medianoche.', 'La verdad está escondida', 'entre mis libros.'],
-  ['No confíes en', 'quien sonría primero', 'cuando se apaguen las luces.', 'Yo ya sé', 'quién quiere verme muerto.'],
-  ['Esta noche', 'pienso contarlo todo', 'delante de los seis.', 'Que tiemble', 'quien tenga algo que ocultar.'],
-  ['He cambiado', 'mi testamento', 'a última hora.', 'El sobre lacrado', 'está en la caja de música.'],
+  // 1. Una cita misteriosa
+  [
+    'Si estás leyendo esto,',
+    'es que no llegué',
+    'al brindis de las cuatro.',
+    'Alguien me ha citado',
+    'lejos de la pista',
+    'a las tres y media.',
+    'Si me pasa algo,',
+    'mirad mi reloj:',
+    'marcará la hora exacta',
+    'de esa cita.',
+  ],
+  // 2. Algo que devolver
+  [
+    'No me esperéis',
+    'para el último baile.',
+    'Tengo que devolverle',
+    'a alguien',
+    'algo que no es mío.',
+    'Si no vuelvo,',
+    'el sobre',
+    'de mi chaqueta',
+    'lo explica',
+    'todo.',
+  ],
+  // 3. La copa cambiada
+  [
+    'Que nadie toque',
+    'mi copa',
+    'mientras estoy en el baño.',
+    'Esta noche',
+    'ya me la han cambiado',
+    'dos veces.',
+    'Si me encuentro mal,',
+    'avisad a Juanky',
+    'antes que',
+    'a nadie.',
+  ],
+  // 4. Lo que vio en el ascensor
+  [
+    'He visto',
+    'algo en el ascensor',
+    'que no debía ver.',
+    'Si alguien pregunta,',
+    'yo estaba en la barra',
+    'pidiendo chupitos.',
+    'Mañana,',
+    'con la resaca,',
+    'os cuento',
+    'lo que vi.',
+  ],
 ];
 
 export function generarNota(rng: Rng): PuzleNota {

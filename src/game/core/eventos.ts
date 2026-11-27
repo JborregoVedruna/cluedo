@@ -27,4 +27,7 @@ export class Emisor<M extends Record<string, unknown>> {
 /** Peticiones de la interfaz Phaser hacia los paneles superpuestos. */
 export const busUi = new Emisor<{
   'ver-pista': { mision: number };
+  'ir-a-mision': { mision: number };
+  modal: { abierto: boolean };
+  'partida-perdida': Record<string, never>;
 }>();
