@@ -105,7 +105,7 @@ export const SOSPECHOSOS: Sospechoso[] = [
       'Apenas un conocido lejano de Puyana. Aun así, desde lo de la Gran Vía, cada vez que se cruzan se nota la tensión.',
     motivo: 'Puyana le llamó Pirri en plena Gran Vía.',
     coartada: 'Estaba hablando con su pareja por teléfono.',
-    secreto: 'Puyana estaba la noche en que se encontró con Amara.',
+    secreto: 'Se enteró de que fue Puyana quién le robó el paddle.',
     pistaInocente:
       'el registro de llamadas demuestra que Kike el verde estuvo al teléfono con su pareja de 3:28 a 3:58, y varios invitados le oyeron repetir «que sí, que ya voy»',
     comoFue:
